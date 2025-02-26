@@ -1,0 +1,33 @@
+services:
+  my_service:
+    build:
+        context: .
+        dockerfile: Dockerfile
+    ports:
+      - '8080:8080'
+    environment:
+      DEBUG: 'False'
+      APP_MODE: 'Production'
+      DJANGO_SECRET: $DJANGO_SECRET
+      PDB_USER: $MY_SERVICE_PDB_USER
+      PDB_PASS: $MY_SERVICE_PDB_PASS
+      PDB_NAME: $MY_SERVICE_PDB_NAME
+      PDB_PORT: $MY_SERVICE_PDB_PORT
+      PDB_HOST: my-service-pdb
+      GUNICORN_WORKER_NUMBER: $MY_SERVICE_GUNICORN_WORKER_NUMBER
+      GUNICORN_TIMEOUT: $MY_SERVICE_GUNICORN_TIMEOUT
+    depends_on:
+      - my-service-pdb
+
+  my-service-pdb:
+    image: ${DOCKER_REG:-}postgres:16
+    environment:
+      POSTGRES_USER: $MY_SERVICE_PDB_USER
+      POSTGRES_PASSWORD: $MY_SERVICE_PDB_PASS
+      POSTGRES_DB: $MY_SERVICE_PDB_NAME
+    volumes:
+      - my_service_local_db_mount:/var/lib/postgresql/data
+
+
+volumes:
+  my_service_local_db_mount: {}

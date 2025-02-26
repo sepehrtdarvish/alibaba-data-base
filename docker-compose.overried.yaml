@@ -1,0 +1,11 @@
+services:
+  my_service:
+    build:
+      args:
+        - DOCKER_REG=docker.arvancloud.ir/
+    volumes:
+      - ${MY_SERVICE_SOURCE:-./src}:/home/my_service
+    environment:
+      DEBUG: "True"
+      APP_MODE: "Development"
+      ALLOWED_HOSTS: "localhost 0.0.0.0 *"

@@ -1,0 +1,42 @@
+# Ignore Python bytecode files
+__pycache__/
+*.py[cod]
+
+# Ignore environment variables and secrets
+.env
+*.env
+*.venv
+venv/
+
+# Ignore history files
+*.history
+*.log
+
+# Ignore IDE/editor specific files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Ignore build and distribution files
+dist/
+build/
+*.egg-info/
+
+# Ignore Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Ignore system files
+.DS_Store
+Thumbs.db
+
+# Ignore Django specific files
+db.sqlite3
+*.sqlite3
+/media/
+/static/
+__pycache__/
+*.pyc
+local_settings.py
+.envrc
+*.log
