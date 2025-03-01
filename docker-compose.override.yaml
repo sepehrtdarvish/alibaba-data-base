@@ -1,10 +1,10 @@
 services:
-  my_service:
+  alibaba:
     build:
       args:
         - DOCKER_REG=docker.arvancloud.ir/
     volumes:
-      - ${MY_SERVICE_SOURCE:-./src}:/home/my_service
+      - ${MY_SERVICE_SOURCE:-./src}:/home/alibaba
     environment:
       DEBUG: "True"
       APP_MODE: "Development"

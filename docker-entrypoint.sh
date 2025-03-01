@@ -15,20 +15,20 @@ else
 	mkdir -p /var/logs/application_logs
 
 	if [[ "$DEBUG" = "True" ]]; then
-		python /home/my_service/manage.py migrate --noinput
+		python /home/alibaba/manage.py migrate --noinput
 		if [ $? -ne 0 ]; then
-			echo "Migration my_service DB failed." >&2
+			echo "Migration alibaba DB failed." >&2
 			exit 1
 		fi
 	fi
 
 	echo "Starting Gunicorn..."
 
-	exec gunicorn my_service.wsgi:application \
-	   --name my_service-gunicorn \
+	exec gunicorn alibaba.wsgi:application \
+	   --name alibaba-gunicorn \
 	   --bind 0.0.0.0:8080 \
 	   --workers $GUNICORN_WORKER_NUMBER \
-	   --pythonpath "/home/my_service" \
+	   --pythonpath "/home/alibaba" \
 	   --log-level=info \
 	   --log-file=- \
 	   --timeout $GUNICORN_TIMEOUT \

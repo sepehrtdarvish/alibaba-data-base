@@ -7,6 +7,8 @@ djangorestframework-simplejwt==5.3.1
 celery==5.3.4
 python-decouple==3.8
 redis==4.5.5
+selenium>=4.0.0
 pyautogui==0.9.54
+webdriver-manager>=3.0.0
 httpcore>=0.13.0
 django-cors-headers

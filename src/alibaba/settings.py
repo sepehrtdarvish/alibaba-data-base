@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/5.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
-
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -20,7 +20,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-*z$nxeuvg&5teerh(t_741n3#w8_hu$x7i3(x04#no!y@1envb"
+SECRET_KEY = "django-insecure-p0b9p9hgfnf*u3d$&uo14oqsha7!8nk@c)xq1y*e@b(a8mvzv&"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -75,8 +75,12 @@ WSGI_APPLICATION = "alibaba.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv('PDB_NAME').strip().lower(),
+        'USER': os.getenv('PDB_USER').strip().lower(),
+        'PASSWORD': os.getenv('PDB_PASS').strip().lower(),
+        'HOST': os.getenv('PDB_HOST').strip().lower(),
+        'PORT': os.getenv('PDB_PORT').strip().lower(),
     }
 }
 
@@ -116,6 +120,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = "static/"
+STATIC_ROOT = 'static/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
