@@ -22,7 +22,6 @@ class GmailSender:
     def send_gmail_message(self, dest_gmail_address, server, body, subject):
         msg = MIMEMultipart()
         msg['From'] = self.origin_gmail_address
-        msg['To'] = dest_gmail_address
         msg['Subject'] = subject
         msg.attach(MIMEText(body, 'plain'))
 
