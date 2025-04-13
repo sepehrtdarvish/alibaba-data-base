@@ -90,13 +90,14 @@ WSGI_APPLICATION = "alibaba.wsgi.application"
 DATABASES = {
     "default": {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('PDB_NAME').strip().lower(),
-        'USER': os.getenv('PDB_USER').strip().lower(),
-        'PASSWORD': os.getenv('PDB_PASS').strip().lower(),
-        'HOST': os.getenv('PDB_HOST').strip().lower(),
-        'PORT': os.getenv('PDB_PORT').strip().lower(),
+        'NAME': os.getenv('PDB_NAME', 'alibaba_db').strip().lower(),
+        'USER': os.getenv('PDB_USER', 'postgres').strip().lower(),
+        'PASSWORD': os.getenv('PDB_PASS', 'postgres').strip().lower(),
+        'HOST': os.getenv('PDB_HOST', 'localhost').strip().lower(),
+        'PORT': os.getenv('PDB_PORT', '5432').strip().lower(),
     }
 }
+
 
 
 # Password validation
