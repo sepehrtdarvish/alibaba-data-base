@@ -10,7 +10,7 @@ class GmailSender:
         self.smtp_server = 'smtp.gmail.com'
         self.smtp_port = 587
 
-    def login_to_smtp_server(self):
+    def __login_to_smtp_server(self):
         try:
             server = smtplib.SMTP(self.smtp_server, self.smtp_port)
             server.starttls()
@@ -19,7 +19,7 @@ class GmailSender:
         except Exception as e:
             raise Exception(f'SMTP Connection Error: {str(e)}')
 
-    def send_gmail_message(self, dest_gmail_address, server, body, subject):
+    def __send_gmail_message(self, dest_gmail_address, server, body, subject):
         msg = MIMEMultipart()
         msg['From'] = self.origin_gmail_address
         msg['Subject'] = subject
@@ -32,8 +32,8 @@ class GmailSender:
 
     def send(self, subject, body, dest_gmail_address):
         try:
-            server = self.login_to_smtp_server()
-            self.send_gmail_message(dest_gmail_address, server, body, subject)
+            server = self.__login_to_smtp_server()
+            self.__send_gmail_message(dest_gmail_address, server, body, subject)
             server.quit()
             return {'status': "success"}
         except Exception as e:
