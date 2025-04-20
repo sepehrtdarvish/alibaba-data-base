@@ -7,7 +7,7 @@ import uuid
 
 class UserAccountManager(BaseUserManager):
 
-    def validate_phone_number(self, email):
+    def validate_email(self, email):
         return not self.model.objects.filter(email=email).exists()
             
     def create_user(self, email, password=None, **extra_fields):
