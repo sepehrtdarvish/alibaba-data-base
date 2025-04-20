@@ -1,1 +1,1 @@
-from .otp import OTPView
+from .otp import *

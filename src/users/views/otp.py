@@ -54,12 +54,14 @@ class OTPView(APIView):
 
     def post(self, request):
         serializer = VerifyOtpRequestSerializer(data=request.data)
-        if serializer.is_valid():
-            data = serializer.validated_data
-            if verify_otp(data['receiver'], data['code']):
-                token = generate_user_token(data['receiver'])
-                return Response(status=status.HTTP_200_OK, data={'token': token})
-            else:
-                return Response(status=status.HTTP_401_UNAUTHORIZED)
+        serializer.is_valid()
+
+        receiver = serializer.validated_data['receiver']
+        code = serializer.validated_data['code']
+
+        if verify_otp(receiver, code):
+            token = generate_user_token(receiver)
+
+            return Response(status=status.HTTP_200_OK, data={'token': token})
         else:
-            return Response(status=status.HTTP_400_BAD_REQUEST, data=serializer.errors)
+            return Response(status=status.HTTP_401_UNAUTHORIZED)

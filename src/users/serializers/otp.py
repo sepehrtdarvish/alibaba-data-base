@@ -11,11 +11,11 @@ class RequestOTPSerializer(serializers.Serializer):
         super().validate(attrs)
         if not UserAccount.objects.filter(email=attrs['receiver']).exists():
             # TODO: remove user creation
-            user = UserAccount.objects.create_company_owner(email=attrs['receiver'])
+            UserAccount.objects.create_company_owner(email=attrs['receiver'])
 
             # raise serializers.ValidationError('User does not exist')
         else:
-            user = UserAccount.objects.filter(email=attrs['receiver']).first()
+            UserAccount.objects.filter(email=attrs['receiver']).first()
 
         return attrs
 
