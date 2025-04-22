@@ -13,7 +13,7 @@ class UserAccountManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
         if not email:
             raise ValueError('The email is required.')
-        if not self.validate_phone_number(email=email):
+        if not self.validate_email(email=email):
             return None
         user = self.model(email=email, **extra_fields)
         if password:
@@ -21,15 +21,15 @@ class UserAccountManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, phone_number, password=None, **extra_fields):
+    def create_superuser(self, email, password=None, **extra_fields):
         extra_fields.setdefault('is_superuser', True)
         extra_fields.setdefault('is_active', True)
-        return self.create_user(phone_number, password, **extra_fields)
+        return self.create_user(email, password, **extra_fields)
 
-    def create_company_owner(self, phone_number, password=None, **extra_fields):
+    def create_company_owner(self, email, password=None, **extra_fields):
         extra_fields.setdefault('is_superuser', False)
         extra_fields.setdefault('is_company_owner', True)
-        return self.create_user(phone_number, password, **extra_fields)
+        return self.create_user(email, password, **extra_fields)
 
 
 class UserAccount(AbstractBaseUser, PermissionsMixin):

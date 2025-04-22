@@ -35,6 +35,6 @@ class GmailSender:
             server = self.__login_to_smtp_server()
             self.__send_gmail_message(dest_gmail_address, server, body, subject)
             server.quit()
-            return {'status': "success"}
+            
         except Exception as e:
-            return {'status': "error", 'message': str(e)}
+            raise Exception(f"Email sending error: {str(e)}")
