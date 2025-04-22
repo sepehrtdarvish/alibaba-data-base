@@ -40,3 +40,7 @@ __pycache__/
 local_settings.py
 .envrc
 *.log
+
+# Igonre migration files
+**/migrations/*.py
+**/migrations/*.pyc

@@ -13,3 +13,4 @@ webdriver-manager>=3.0.0
 httpcore>=0.13.0
 django-cors-headers
 django-phonenumber-field
+djoser
