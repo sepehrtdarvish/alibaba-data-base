@@ -23,7 +23,7 @@ class OTPView(APIView):
             gmail_sender = GmailSender()
             
             gmail_sender.send(
-                dest_gmail_address=serializer.validated_data['receiver'],
+                dest_gmail_address=data['receiver'],
                 subject='Alibaba Verifaction Code',
                 body = f"""
                     Hello,

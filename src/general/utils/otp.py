@@ -3,29 +3,30 @@ import uuid
 from django.core.cache import cache
 
 
-def generate_otp(phone_number):
-    # otp = random.randint(100000, 999999)
+def generate_otp(email):
+    # TODO: otp = random.randint(100000, 999999)
     otp = '1234'
-    cache.set(f'otp_{phone_number}', otp, timeout=300)  # Store OTP for 5 minutes
+    cache.set(f'otp_{email}', otp, timeout=300)  # Store OTP for 5 minutes
     return otp
 
 
-def verify_otp(phone_number, otp):
-    cached_otp = cache.get(f'otp_{phone_number}')
-    if str(cached_otp) == str(otp) or str(otp) == '1234':
-        cache.delete(f'otp_{phone_number}')
+def verify_otp(email, otp):
+    cached_otp = cache.get(f'otp_{email}')
+    
+    if str(cached_otp) == str(otp):
+        cache.delete(f'otp_{email}')
         return True
     return False
 
 
-def generate_user_token(phone_number):
+def generate_user_token(email):
     token = uuid.uuid4().hex
-    cache.set(f'token_{token}', phone_number, timeout=3000)  # Store token for 50 minutes
+    cache.set(f'token_{token}', email, timeout=3000)  # Store token for 50 minutes
     return token
 
 
 def get_user_by_token(token):
-    cached_phone_number = cache.get(f'token_{token}')
-    if cached_phone_number:
-        return cached_phone_number
+    cached_email = cache.get(f'token_{token}')
+    if cached_email:
+        return cached_email
     return None
