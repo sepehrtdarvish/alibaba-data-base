@@ -14,3 +14,4 @@ httpcore>=0.13.0
 django-cors-headers
 django-phonenumber-field
 djoser
+drf-standardized-errors

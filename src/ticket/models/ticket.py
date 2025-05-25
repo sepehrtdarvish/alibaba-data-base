@@ -32,7 +32,7 @@ class Ticket(models.Model):
     delay = models.DurationField(null=True, blank=True)
     class_type = models.CharField(max_length=20, choices=TicketType.choices)
     capacity = models.PositiveIntegerField()
-    vehicle_type = models.ForeignKey(Vehicle, on_delete=models.CASCADE)
+    vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE)
     stops = models.PositiveIntegerField(null=True, blank=True)
 
 
