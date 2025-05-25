@@ -8,23 +8,9 @@ from django.utils.decorators import method_decorator
 
 from ticket.models import StationLocation, LocationType
 from ticket.serializers import GetLocationSerializer, StationLocationModelSerializer, TicketWriteSerializer, TicketModelSerializer
-from ticket.decorators import company_required
+from users.decorators import company_required
 
 from django.conf import settings
-
-class LocationView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        serializer = GetLocationSerializer(data=request.query_params)
-        serializer.is_valid(raise_exception=True)
-
-        location_type = serializer.validated_data['type']
-        locations = StationLocation.objects.filter(location_type=location_type)
-
-        location_serializer = StationLocationModelSerializer(locations, many=True)
-
-        return Response(location_serializer.data, status=status.HTTP_200_OK)
 
 
 class CompanyOwnerTicketView(APIView):

@@ -7,5 +7,6 @@ urlpatterns = [
     path('activate/', ActivateAccountView.as_view()),
     path('jwt/create/', CustomTokenObtainPairView.as_view()),
     path('jwt/refresh/', CustomTokenRefreshView.as_view()),
-    path('jwt/verify/', CustomTokenVerifyView.as_view())
+    path('jwt/verify/', CustomTokenVerifyView.as_view()),
+    path('admin/company-owner/', AdminCompanyOwner.as_view())
 ]

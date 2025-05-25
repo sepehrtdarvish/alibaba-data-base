@@ -1,5 +1,5 @@
 from rest_framework import status
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from djoser.social.views import ProviderAuthView
@@ -7,8 +7,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
 from django.conf import settings
 
-from users.serializers import ActivateAccountSerializer
-
+from users.serializers import ActivateAccountSerializer, CompanyOwnerWriteSerializer
+from users.models import UserAccount
 
 
 class CustomProviderAuthView(ProviderAuthView):
@@ -124,4 +124,16 @@ class ActivateAccountView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         
+        return Response(status=status.HTTP_200_OK)
+
+
+class AdminCompanyOwner(APIView):
+    permission_classes = [IsAuthenticated, IsAdminUser]
+
+    def post(self, request):
+        print(request.user.is_superuser)
+        serializer = CompanyOwnerWriteSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+
         return Response(status=status.HTTP_200_OK)

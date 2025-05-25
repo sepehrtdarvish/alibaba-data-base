@@ -17,9 +17,10 @@ class LocationType(models.TextChoices):
 
 class StationLocation(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=100)
     city = models.CharField(max_length=50)
     country = models.CharField(max_length=50)
-    location_type = models.CharField(max_length=20, choices=LocationType.choices)
+    type = models.CharField(max_length=20, choices=LocationType.choices)
 
 
 class Ticket(models.Model):
