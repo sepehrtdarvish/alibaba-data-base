@@ -7,7 +7,7 @@ from django.utils.decorators import method_decorator
 
 from ticket.models import StationLocation, LocationType
 from ticket.serializers import GetLocationSerializer, StationLocationModelSerializer, StationLocationSerializer
-from ticket.decorators import company_required
+from users.decorators import company_required
 
 class LocationView(APIView):
     permission_classes = [IsAuthenticated]
