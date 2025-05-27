@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from ticket.models import StationLocation, LocationType, Ticket, TicketSection
-from organisation.models import Vehicle, Company, Section, SectionType
-
+from organisation.models import Vehicle, Company, Section, SectionType, Train, Bus, AirPlane
+from organisation.serializers import TrainReadSerializer, BusReadSerializer, AirplaneReadSerializer, SectionReadSerializer
 class GetLocationSerializer(serializers.Serializer):
     type = serializers.ChoiceField(choices=LocationType.choices)
 
@@ -18,6 +18,15 @@ class TicketSectionSerializer(serializers.Serializer):
     )
     price = serializers.FloatField(required=True)
  
+
+
+class TicketSectionReadSerializer(serializers.ModelSerializer):
+    section = SectionReadSerializer()
+    
+    class Meta:
+        model = TicketSection
+        fields = '__all__'
+
 
 class TicketWriteSerializer(serializers.Serializer):
     origin = serializers.PrimaryKeyRelatedField(
@@ -82,11 +91,27 @@ class TicketWriteSerializer(serializers.Serializer):
 
 
 class TicketModelSerializer(serializers.ModelSerializer):
-    sections = TicketSectionSerializer(many=True)
+    sections = TicketSectionReadSerializer(many=True)
+    origin = StationLocationModelSerializer(read_only=True)
+    destination = StationLocationModelSerializer(read_only=True)
+    vehicle = serializers.SerializerMethodField()
 
     class Meta:
         model = Ticket
         fields = '__all__'
+
+    def get_vehicle(self, obj):
+        vehicle = obj.sections.first().section.vehicle
+        
+        if hasattr(vehicle, 'train'):
+            train = vehicle.train
+            return TrainReadSerializer(train).data
+        elif hasattr(vehicle, 'bus'):
+            bus = vehicle.bus
+            return BusReadSerializer(bus).data
+        elif hasattr(vehicle, 'airplane'):
+            airplane = vehicle.airplane
+            return AirplaneReadSerializer(airplane).data
 
 
 class TicketSectionModelSerializer(serializers.ModelSerializer):

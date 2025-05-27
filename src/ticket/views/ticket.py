@@ -7,8 +7,8 @@ from django.utils.decorators import method_decorator
 from django.db.models import Q
 
 
-from ticket.models import StationLocation, LocationType
-from ticket.serializers import GetLocationSerializer, StationLocationModelSerializer, TicketWriteSerializer, TicketModelSerializer
+from ticket.models import StationLocation, LocationType, Ticket
+from ticket.serializers import GetLocationSerializer, TicketQuerySerializer, TicketWriteSerializer, TicketModelSerializer
 from users.decorators import company_required
 
 from django.conf import settings
@@ -25,9 +25,7 @@ class CompanyOwnerTicketView(APIView):
         serializer.is_valid(raise_exception=True)
         ticket = serializer.save()
 
-        ticket_serializer = TicketModelSerializer(ticket)
-
-        return Response(ticket_serializer.data, status=status.HTTP_200_OK)
+        return Response(TicketModelSerializer(ticket).data, status=status.HTTP_200_OK)
     
 
 class TicketView(APIView):
@@ -36,13 +34,33 @@ class TicketView(APIView):
     def get(self, request):
         query = Q()
 
-        if request.query_params.get('origin'):
-            query &= Q(origin=request.query_params.get('from'))
+        serializer = TicketQuerySerializer(data=request.query_params)
+        serializer.is_valid(raise_exception=True)
 
-        if request.query_params.get('destination'):
-            query &= Q(destination=request.query_params.get('to'))
+        origin = serializer.validated_data.get('origin', None)
+        if origin:
+            query &= Q(origin=origin)
 
-        if request.query_params.get('start_at'):
-            query &= Q(start_at=request.query_params.get('date'))
+        destination = serializer.validated_data.get('destination', None)
+        if destination:
+            query &= Q(destination=destination)
+
+        start_at = serializer.validated_data.get('start_at', None)
+        if start_at:
+            query &= Q(start_at__gte=start_at)
+
+        min_price = serializer.validated_data.get('min_price', None)
+        if min_price:
+            query &= Q(price__gte=min_price)
+
+        max_price = serializer.validated_data.get('max_price', None)
+        if max_price:
+            query &= Q(price__lte=max_price)
+
+        class_type = serializer.validated_data.get('class_type', None)
+        if class_type:
+            query &= Q(class_type=class_type)
 
         tickets = Ticket.objects.filter(query)
+
+        return Response(TicketModelSerializer(tickets, many=True).data, status=status.HTTP_200_OK)
