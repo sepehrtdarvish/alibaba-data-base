@@ -24,7 +24,6 @@ class AirplaneServices(Services):
 
 
 class BusServices(Services):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     individual_screen = models.BooleanField(default=False)
     air_conditioning = models.BooleanField(default=False)
 
@@ -33,6 +32,7 @@ class Vehicle(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     capacity = models.PositiveIntegerField()
     services = models.ForeignKey(Services, on_delete=models.CASCADE)
+    company = models.ForeignKey('organisation.Company', on_delete=models.PROTECT, null=True)
 
 
 class Train(Vehicle):
@@ -51,8 +51,6 @@ class AirPlaneClasses(models.TextChoices):
 
 
 class AirPlane(Vehicle):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    airplane_services = models.OneToOneField(AirplaneServices, on_delete=models.CASCADE)
     unicode = models.CharField(max_length=50, unique=True)
     flight_class = models.CharField(max_length=20, choices=AirPlaneClasses.choices)
 
