@@ -3,12 +3,6 @@ import uuid
 from organisation.models import Vehicle
 
 
-class TicketType(models.TextChoices):
-    economy = 'economy'
-    vip = 'vip'
-    business = 'business'
-
-
 class LocationType(models.TextChoices):
     airport = 'airport'
     terminal = 'terminal'
@@ -31,7 +25,6 @@ class Ticket(models.Model):
     start_at = models.DateTimeField()
     duration = models.DurationField()
     delay = models.DurationField(null=True, blank=True)
-    class_type = models.CharField(max_length=20, choices=TicketType.choices)
     capacity = models.PositiveIntegerField()
     stops = models.PositiveIntegerField(null=True, blank=True)
 

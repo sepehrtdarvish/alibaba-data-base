@@ -1,7 +1,6 @@
 from django.db import models
 import uuid
 
-
 class VehicleTypes(models.TextChoices):
     Train = 'Train'
     AirPlane = 'AirPlane'
@@ -73,9 +72,15 @@ class Bus(Vehicle):
     license_plate = models.CharField(max_length=15)
 
 
+class SectionType(models.TextChoices):
+    economy = 'economy'
+    vip = 'vip'
+    business = 'business'
+
+
 class Section(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.CharField(max_length=50)
+    name = models.CharField(max_length=50, choices=SectionType.choices)
     start_number = models.PositiveIntegerField()
     end_number = models.PositiveIntegerField()
     vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE, related_name='sections')

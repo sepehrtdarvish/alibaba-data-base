@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from django.utils.decorators import method_decorator
+from django.db.models import Q
 
 
 from ticket.models import StationLocation, LocationType
@@ -27,3 +28,21 @@ class CompanyOwnerTicketView(APIView):
         ticket_serializer = TicketModelSerializer(ticket)
 
         return Response(ticket_serializer.data, status=status.HTTP_200_OK)
+    
+
+class TicketView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        query = Q()
+
+        if request.query_params.get('origin'):
+            query &= Q(origin=request.query_params.get('from'))
+
+        if request.query_params.get('destination'):
+            query &= Q(destination=request.query_params.get('to'))
+
+        if request.query_params.get('start_at'):
+            query &= Q(start_at=request.query_params.get('date'))
+
+        tickets = Ticket.objects.filter(query)

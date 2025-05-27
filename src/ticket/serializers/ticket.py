@@ -1,6 +1,6 @@
 from rest_framework import serializers
-from ticket.models import StationLocation, LocationType, TicketType, Ticket, TicketSection
-from organisation.models import Vehicle, Company, Section
+from ticket.models import StationLocation, LocationType, Ticket, TicketSection
+from organisation.models import Vehicle, Company, Section, SectionType
 
 class GetLocationSerializer(serializers.Serializer):
     type = serializers.ChoiceField(choices=LocationType.choices)
@@ -29,7 +29,6 @@ class TicketWriteSerializer(serializers.Serializer):
     price = serializers.FloatField(required=True)
     start_at = serializers.DateTimeField(required=True)
     duration = serializers.DurationField(required=True)
-    class_type = serializers.ChoiceField(choices=TicketType.choices, required=True)
     capacity = serializers.IntegerField(required=True)
     sections = TicketSectionSerializer(required=True, many=True)
     stops = serializers.IntegerField(required=True, allow_null=True)
@@ -45,7 +44,18 @@ class TicketWriteSerializer(serializers.Serializer):
         # Validate locations
         if attrs['origin'] == attrs['destination']:
             raise serializers.ValidationError('Origin and destination cannot be the same.')
+        
+        sections = attrs['sections']
+        vehicle = sections[0]['section'].vehicle
 
+        for section in sections:
+            if section['section'].vehicle != vehicle:
+                raise serializers.ValidationError('All sections must belong to the same vehicle.')
+            
+        if vehicle.company != self.context['company']:
+            raise serializers.ValidationError('Vehicle does not belong to company.')
+            
+        
         return attrs
     
     def create(self, validated_data):
@@ -57,7 +67,6 @@ class TicketWriteSerializer(serializers.Serializer):
             price = validated_data['price'],
             start_at = validated_data['start_at'],
             duration = validated_data['duration'],
-            class_type = validated_data['class_type'],
             capacity = validated_data['capacity'],
             stops = validated_data['stops'],
         )
@@ -84,3 +93,19 @@ class TicketSectionModelSerializer(serializers.ModelSerializer):
     class Meta:
         model = TicketSection
         fields = '__all__'
+
+
+class TicketQuerySerializer(serializers.Serializer):
+    origin = serializers.PrimaryKeyRelatedField(
+        queryset = StationLocation.objects.all(), required=False
+    )
+    destination = serializers.PrimaryKeyRelatedField(
+        queryset = StationLocation.objects.all(), required=False
+    )
+    start_at = serializers.DateField(required=False)
+    min_price = serializers.FloatField(required=False)
+    max_price = serializers.FloatField(required=False)
+    class_type = serializers.ChoiceField(choices=SectionType.choices, required=False)
+    company = serializers.PrimaryKeyRelatedField(
+        queryset = Company.objects.all(), required=False
+    )

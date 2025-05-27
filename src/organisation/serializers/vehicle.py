@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from ticket.models import StationLocation, LocationType, TicketType, Ticket
+from ticket.models import StationLocation, LocationType, Ticket
 from organisation.models import Vehicle, Section, VehicleTypes, TrainServices, Train, Bus, AirPlane, BusServices, AirplaneServices
 
 from django.db import transaction
