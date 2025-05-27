@@ -37,6 +37,13 @@ class Ticket(models.Model):
     stops = models.PositiveIntegerField(null=True, blank=True)
 
 
+class TicketSection(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    section = models.ForeignKey('organisation.Section', on_delete=models.CASCADE, null=True)
+    price = models.FloatField()
+    ticket = models.ForeignKey(Ticket, on_delete=models.CASCADE, null=True)
+
+
 class LocationType(models.TextChoices):
     airport = 'airport'
     terminal = 'terminal'

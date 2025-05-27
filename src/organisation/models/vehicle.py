@@ -39,6 +39,7 @@ class Train(Vehicle):
     star_number = models.IntegerField(choices=[(i, i) for i in range(3, 6)])
     unicode = models.CharField(max_length=50)
 
+
 class AirPlaneClassTypes(models.TextChoices):
     Economy = 'Economy'
     Business = 'Business'
@@ -70,3 +71,13 @@ class Bus(Vehicle):
     bus_type = models.CharField(max_length=20, choices=BusClassTypes.choices)
     seat_kind = models.CharField(max_length=10, choices=BusSeatTypes.choices)
     license_plate = models.CharField(max_length=15)
+
+
+class Section(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=50)
+    start_number = models.PositiveIntegerField()
+    end_number = models.PositiveIntegerField()
+    vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE, related_name='sections')
+    tickets = models.ManyToManyField('ticket.Ticket', through='ticket.TicketSection')
+

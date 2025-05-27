@@ -1,8 +1,29 @@
 from rest_framework import serializers
 from ticket.models import StationLocation, LocationType, TicketType, Ticket
-from organisation.models import Vehicle, Company, VehicleTypes, TrainServices, Train, Bus, AirPlane, BusServices, AirplaneServices
+from organisation.models import Vehicle, Section, VehicleTypes, TrainServices, Train, Bus, AirPlane, BusServices, AirplaneServices
 
 from django.db import transaction
+
+
+class SeatWriteSerializer(serializers.Serializer):
+    start_number = serializers.IntegerField(required=True)
+    end_number = serializers.IntegerField(required=True)
+    name = serializers.CharField(required=True)
+
+    def validate(self, attrs):
+        if attrs['start_number'] > attrs['end_number']:
+            raise serializers.ValidationError('Start number cannot be greater than end number.')
+
+        return attrs
+
+    def create(self, attrs):
+        return Section.objects.create(
+            start_number = attrs['start_number'],
+            end_number = attrs['end_number'],
+            name = attrs['name'],
+            vehicle = self.context['vehicle']
+        )
+
 
 class TrainWriteSerializer(serializers.Serializer):
     capacity = serializers.IntegerField(required=True)
@@ -13,6 +34,20 @@ class TrainWriteSerializer(serializers.Serializer):
     unicode = serializers.CharField(required=True)
     catering_service = serializers.BooleanField(required=True)
     wifi_access = serializers.BooleanField(required=True)
+    sections = SeatWriteSerializer(many=True, required=True)
+
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        request_data = kwargs.get('data', {})
+
+        capacity = request_data.get('capacity')
+
+        self.context['capacity'] = capacity
+
+        self.fields['sections'].context.update({'capacity': capacity})
+
 
 
     def validate_capacity(self, obj):
@@ -27,6 +62,22 @@ class TrainWriteSerializer(serializers.Serializer):
 
         return obj
 
+
+    def validate(self, attrs):
+        capacity = attrs['capacity']
+        sections_lst = attrs['sections']
+        if len(sections_lst) < 1:
+            raise serializers.ValidationError("Invalid section number")
+        sections_capacity = 0
+        for section in sections_lst:
+            sections_capacity += section['end_number'] - section['start_number'] + 1
+
+        if capacity != sections_capacity:
+            raise serializers.ValidationError("Invalid Seats number")
+
+        return attrs
+    
+    
     def create(self, validated_data):
         with transaction.atomic():
             services = TrainServices.objects.create(
@@ -37,6 +88,7 @@ class TrainWriteSerializer(serializers.Serializer):
                 wifi_access = validated_data.get('wifi_access', False),
             )
 
+
             train = Train.objects.create(
                 capacity = validated_data['capacity'],
                 unicode = validated_data['unicode'],
@@ -45,8 +97,20 @@ class TrainWriteSerializer(serializers.Serializer):
                 company=self.context['company']
             )
 
+
+            sections = validated_data['sections']
+            sections_serializer = SeatWriteSerializer(data=sections, many=True, context={'vehicle': train})
+            sections_serializer.is_valid(raise_exception=True)
+            sections_serializer.save()
+
+
         return train
 
+
+class SectionReadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Section
+        fields = ['start_number', 'end_number', 'name']
 
 
 class TrainServicesReadSerializer(serializers.ModelSerializer):
@@ -63,6 +127,7 @@ class TrainServicesReadSerializer(serializers.ModelSerializer):
 
 class TrainReadSerializer(serializers.ModelSerializer):
     services = serializers.SerializerMethodField()
+    sections = SectionReadSerializer(many=True, read_only=True)
 
     class Meta:
         model = Train
