@@ -110,7 +110,7 @@ class TrainWriteSerializer(serializers.Serializer):
 class SectionReadSerializer(serializers.ModelSerializer):
     class Meta:
         model = Section
-        fields = ['start_number', 'end_number', 'name']
+        fields = ['id', 'start_number', 'end_number', 'name']
 
 
 class TrainServicesReadSerializer(serializers.ModelSerializer):

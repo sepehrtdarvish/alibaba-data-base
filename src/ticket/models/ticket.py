@@ -33,7 +33,6 @@ class Ticket(models.Model):
     delay = models.DurationField(null=True, blank=True)
     class_type = models.CharField(max_length=20, choices=TicketType.choices)
     capacity = models.PositiveIntegerField()
-    vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE)
     stops = models.PositiveIntegerField(null=True, blank=True)
 
 
@@ -41,7 +40,7 @@ class TicketSection(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     section = models.ForeignKey('organisation.Section', on_delete=models.CASCADE, null=True)
     price = models.FloatField()
-    ticket = models.ForeignKey(Ticket, on_delete=models.CASCADE, null=True)
+    ticket = models.ForeignKey(Ticket, on_delete=models.CASCADE, null=True, related_name='sections')
 
 
 class LocationType(models.TextChoices):

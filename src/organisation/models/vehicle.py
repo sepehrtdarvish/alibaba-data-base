@@ -80,4 +80,3 @@ class Section(models.Model):
     end_number = models.PositiveIntegerField()
     vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE, related_name='sections')
     tickets = models.ManyToManyField('ticket.Ticket', through='ticket.TicketSection')
-
