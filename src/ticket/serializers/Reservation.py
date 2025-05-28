@@ -10,9 +10,13 @@ class ReservationWriteSerializer(serializers.Serializer):
 
 
     def validate(self, attrs):
+        user_reserving = Reservation.objects.filter(ticket_section=attrs['ticket_section'], user=self.context['user']).count()
+        if user_re
+
+
         section = attrs['ticket_section'].section
         seats_reserved = Reservation.objects.filter(ticket_section=attrs['ticket_section']).count()
-        
+
         if section.end_number - section.start_number + 1 == seats_reserved:
             raise serializers.ValidationError('Section Capacity is full.')
         
@@ -20,6 +24,8 @@ class ReservationWriteSerializer(serializers.Serializer):
             seat_num = seats_reserved + 1
 
         attrs['seat_num'] = seat_num
+
+        
 
         return attrs
     
