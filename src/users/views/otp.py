@@ -42,7 +42,6 @@ class OTPView(APIView):
                     """
                 )
             
-                
             return Response(status=status.HTTP_200_OK)
         
         except Exception as e:

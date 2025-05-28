@@ -2,11 +2,10 @@ from django.db import models
 import uuid
 
 
-
 class Reservation(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey('users.UserAccount', on_delete=models.CASCADE)
-    section = models.ForeignKey('organisation.Section', on_delete=models.CASCADE, null=True)
+    ticket_section = models.ForeignKey('ticket.TicketSection', on_delete=models.CASCADE, null=True)
     seat_number = models.PositiveIntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

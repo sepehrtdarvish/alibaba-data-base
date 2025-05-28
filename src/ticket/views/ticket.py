@@ -20,7 +20,7 @@ class CompanyOwnerTicketView(APIView):
     @method_decorator(company_required)
     def post(self, request):
         company = request.company
-        
+
         serializer = TicketWriteSerializer(data=request.data, context={'company': company})
         serializer.is_valid(raise_exception=True)
         ticket = serializer.save()

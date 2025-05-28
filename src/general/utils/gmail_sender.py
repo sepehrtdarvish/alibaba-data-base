@@ -28,9 +28,12 @@ class GmailSender:
         try:
             server.sendmail(self.origin_gmail_address, dest_gmail_address, msg.as_string())
         except Exception as e:
+            pass
             raise Exception(f"Email sending error: {str(e)}")
 
     def send(self, subject, body, dest_gmail_address):
+        a = 1
+        """
         try:
             server = self.__login_to_smtp_server()
             self.__send_gmail_message(dest_gmail_address, server, body, subject)
@@ -38,3 +41,4 @@ class GmailSender:
             
         except Exception as e:
             raise Exception(f"Email sending error: {str(e)}")
+        """
