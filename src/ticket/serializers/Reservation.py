@@ -39,17 +39,21 @@ class ReservationWriteSerializer(serializers.Serializer):
             )
 
         return reservation
-    
-
-class ReservationModelSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Reservation
-        fields = '__all__'
 
 
-class GetReservationSerializer(serializers.ModelSerializer):
+class ReservationReadSerializer(serializers.ModelSerializer):
     ticket_section = TicketSectionModelSerializer()
 
     class Meta:
         model = Reservation
         fields = '__all__'
+
+
+class ReservationGetIDSerializezr(serializers.Serializer):
+    reservation = serializers.PrimaryKeyRelatedField(
+        queryset = Reservation.objects.all(), required=True
+    )
+
+    def validate_reservartion(self, obj):
+        if obj.user != self.context['user']:
+            raise serializers.ValidationError('This reservation does not belong to this user.')

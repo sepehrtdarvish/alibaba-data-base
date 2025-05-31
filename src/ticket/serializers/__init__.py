@@ -1,3 +1,3 @@
 from .ticket import *
 from .location import *
-from .Reservation import *
+from .reservation import *

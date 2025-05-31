@@ -131,9 +131,8 @@ class AdminCompanyOwner(APIView):
     permission_classes = [IsAuthenticated, IsAdminUser]
 
     def post(self, request):
-        print(request.user.is_superuser)
         serializer = CompanyOwnerWriteSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user = serializer.save()
+        serializer.save()
 
         return Response(status=status.HTTP_200_OK)

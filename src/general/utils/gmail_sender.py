@@ -5,8 +5,8 @@ import os
 
 class GmailSender:
     def __init__(self):
-        self.origin_gmail_address = os.getenv('OTP_GMAIL', '').strip().lower()
-        self.gmail_password = os.getenv('GMAIL_PASSWORD', '').strip()
+        self.origin_gmail_address = os.getenv('EMAIL_ADDRESS', '').strip().lower()
+        self.gmail_password = os.getenv('EMAIL_PASSWORD', '').strip()
         self.smtp_server = 'smtp.gmail.com'
         self.smtp_port = 587
 
@@ -31,9 +31,7 @@ class GmailSender:
             pass
             raise Exception(f"Email sending error: {str(e)}")
 
-    def send(self, subject, body, dest_gmail_address):
-        a = 1
-        """
+    def send(self, subject, body, dest_gmail_address):    
         try:
             server = self.__login_to_smtp_server()
             self.__send_gmail_message(dest_gmail_address, server, body, subject)
@@ -41,4 +39,4 @@ class GmailSender:
             
         except Exception as e:
             raise Exception(f"Email sending error: {str(e)}")
-        """
+        

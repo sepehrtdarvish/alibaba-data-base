@@ -5,6 +5,8 @@ from rest_framework.views import APIView
 
 from general.utils.otp import generate_otp, generate_user_token, verify_otp
 from general.utils.gmail_sender import GmailSender
+
+from users.models import UserAccount
 from users.serializers import RequestOTPSerializer, VerifyOtpRequestSerializer
 
 
@@ -24,7 +26,7 @@ class OTPView(APIView):
             
             gmail_sender.send(
                 dest_gmail_address=data['receiver'],
-                subject='Alibaba Verifaction Code',
+                subject='Alibaba Verification Code',
                 body = f"""
                     Hello,
 
@@ -38,7 +40,7 @@ class OTPView(APIView):
                     If you did not request this code, please ignore this email.
 
                     Best regards,  
-                    Your Support Team
+                    Alibaba Support Team.
                     """
                 )
             
@@ -56,6 +58,13 @@ class OTPView(APIView):
         code = serializer.validated_data['code']
 
         if verify_otp(email, code):
+            UserAccount.objects.create(
+                email = email,
+                is_superuser = False,
+                is_company_owner = False,
+                is_staff = False
+            )
+
             token = generate_user_token(email)
 
             return Response(data={'token': token}, status=status.HTTP_200_OK)
