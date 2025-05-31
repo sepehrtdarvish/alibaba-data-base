@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from ticket.models import StationLocation, LocationType, Ticket
-from organisation.models import Vehicle, Company
+from company.models import Vehicle, Company
 
 class StationLocationModelSerializer(serializers.ModelSerializer):
     class Meta:

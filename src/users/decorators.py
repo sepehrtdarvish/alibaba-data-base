@@ -1,6 +1,6 @@
 from users.models import UserAccount
-from organisation.models import Company
-from organisation.exceptions import CompanyNotFoundException
+from company.models import Company
+from company.exceptions import CompanyNotFoundException
 
 def company_required(view_func):
     def _wrapped_view(request, *args, **kwargs):

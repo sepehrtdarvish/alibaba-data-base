@@ -6,8 +6,8 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from django.utils.decorators import method_decorator
 from users.decorators import company_required
 
-from organisation.models import Train
-from organisation.serializers import TrainWriteSerializer, GetVehicleSerializer, TrainReadSerializer
+from company.models import Train
+from company.serializers import TrainWriteSerializer, GetVehicleSerializer, TrainReadSerializer
 
 class TrainView(APIView):
     permission_classes = [IsAuthenticated]

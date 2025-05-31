@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from ticket.models import StationLocation, LocationType, Ticket
-from organisation.models import Vehicle, Section, VehicleTypes, TrainServices, Train, Bus, AirPlane, BusServices, AirplaneServices
+from company.models import Vehicle, Section, VehicleTypes, TrainServices, Train, Bus, AirPlane, BusServices, AirplaneServices
 
 from django.db import transaction
 
@@ -16,11 +16,11 @@ class SeatWriteSerializer(serializers.Serializer):
 
         return attrs
 
-    def create(self, attrs):
+    def create(self, validated_data):
         return Section.objects.create(
-            start_number = attrs['start_number'],
-            end_number = attrs['end_number'],
-            name = attrs['name'],
+            start_number = validated_data['start_number'],
+            end_number = validated_data['end_number'],
+            name = validated_data['name'],
             vehicle = self.context['vehicle']
         )
 

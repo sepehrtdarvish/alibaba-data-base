@@ -4,7 +4,7 @@ from general.utils.otp import generate_otp
 from users.models import UserAccount
 from django.db import transaction
 
-from organisation.models import Company
+from company.models import Company
 from general.utils.otp import generate_user_token, get_user_by_token
 import re
 

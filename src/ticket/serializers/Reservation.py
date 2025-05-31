@@ -1,7 +1,9 @@
 from rest_framework import serializers
 from ticket.models import StationLocation, LocationType, Ticket, TicketSection, Reservation
-from organisation.models import Vehicle, Company, Section, SectionType, Train, Bus, AirPlane
-from organisation.serializers import TrainReadSerializer, BusReadSerializer, AirplaneReadSerializer, SectionReadSerializer
+from ticket.serializers import TicketSectionModelSerializer
+from company.models import Vehicle, Company, Section, SectionType, Train, Bus, AirPlane
+from company.serializers import TrainReadSerializer, BusReadSerializer, AirplaneReadSerializer, SectionReadSerializer
+
 
 class ReservationWriteSerializer(serializers.Serializer):
     ticket_section = serializers.PrimaryKeyRelatedField(
@@ -11,8 +13,8 @@ class ReservationWriteSerializer(serializers.Serializer):
 
     def validate(self, attrs):
         user_reserving = Reservation.objects.filter(ticket_section=attrs['ticket_section'], user=self.context['user']).count()
-        if user_re
-
+        if user_reserving != 0:
+            raise serializers.ValidationError('You have already reserved a seat in this section.')
 
         section = attrs['ticket_section'].section
         seats_reserved = Reservation.objects.filter(ticket_section=attrs['ticket_section']).count()
@@ -26,7 +28,6 @@ class ReservationWriteSerializer(serializers.Serializer):
         attrs['seat_num'] = seat_num
 
         
-
         return attrs
     
 
@@ -41,6 +42,14 @@ class ReservationWriteSerializer(serializers.Serializer):
     
 
 class ReservationModelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Reservation
+        fields = '__all__'
+
+
+class GetReservationSerializer(serializers.ModelSerializer):
+    ticket_section = TicketSectionModelSerializer()
+
     class Meta:
         model = Reservation
         fields = '__all__'

@@ -10,9 +10,8 @@ class ReportType(models.TextChoices):
 
 class Report(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    subject = models.CharField(max_length=50)
     description = models.TextField()
-    report_type = models.CharField(max_length=20, choices=ReportType.choices)
+    subject = models.CharField(max_length=20, choices=ReportType.choices)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     submitted_by = models.ForeignKey('users.UserAccount', on_delete=models.CASCADE, related_name='submitted_reports')

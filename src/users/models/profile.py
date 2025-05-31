@@ -9,3 +9,4 @@ class Profile(models.Model):
     full_name = models.CharField(max_length=50)
     home_town = models.CharField(max_length=30)
     phone_number = models.CharField(max_length=20)
+    birthdate = models.DateField()

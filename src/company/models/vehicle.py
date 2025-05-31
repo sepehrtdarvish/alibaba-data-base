@@ -31,7 +31,7 @@ class Vehicle(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     capacity = models.PositiveIntegerField()
     services = models.ForeignKey(Services, on_delete=models.CASCADE)
-    company = models.ForeignKey('organisation.Company', on_delete=models.PROTECT, null=True)
+    company = models.ForeignKey('company.Company', on_delete=models.PROTECT, null=True)
 
 
 class Train(Vehicle):

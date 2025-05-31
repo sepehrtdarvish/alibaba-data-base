@@ -50,7 +50,8 @@ INSTALLED_APPS = [
     "rest_framework",
     "users",
     "ticket",
-    "organisation",
+    "company",
+    "transaction",
     "phonenumber_field",
 ]
 
