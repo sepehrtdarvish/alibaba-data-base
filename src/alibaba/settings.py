@@ -13,6 +13,8 @@ from os import getenv, path
 import os
 from corsheaders.defaults import default_headers
 
+from datetime import timedelta
+from os import getenv
 
 
 from pathlib import Path
@@ -48,19 +50,20 @@ INSTALLED_APPS = [
     "rest_framework",
     "users",
     "ticket",
-    "organisation",
+    "company",
+    "transaction",
     "phonenumber_field",
 ]
 
 MIDDLEWARE = [
-    "corsheaders.middleware.CorsMiddleware",
-    "django.middleware.security.SecurityMiddleware",
-    "django.contrib.sessions.middleware.SessionMiddleware",
-    "django.middleware.common.CommonMiddleware",
-    "django.middleware.csrf.CsrfViewMiddleware",
-    "django.contrib.auth.middleware.AuthenticationMiddleware",
-    "django.contrib.messages.middleware.MessageMiddleware",
-    "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.security.SecurityMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
 ROOT_URLCONF = "alibaba.urls"
@@ -146,42 +149,75 @@ MEDIA_ROOT = BASE_DIR / 'media'
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 AUTHENTICATION_BACKENDS = [
-    'django.contrib.auth.backends.ModelBackend',
+    'django.contrib.auth.backends.ModelBackend'
 ]
 
 AUTH_COOKIE = 'access'
 AUTH_COOKIE_ACCESS_MAX_AGE = 60 * 60 * 24 * 7
 AUTH_COOKIE_REFRESH_MAX_AGE = 60 * 60 * 24 * 7
-AUTH_COOKIE_SECURE = getenv('AUTH_COOKIE_SECURE', 'True') == 'True'
-AUTH_COOKIE_HTTPONLY = True
+AUTH_COOKIE_SECURE = False
+AUTH_COOKIE_HTTPONLY = False
 AUTH_COOKIE_PATH = '/'
-AUTH_COOKIE_SAMESITE = 'None'
-if not DEBUG:
-    AUTH_COOKIE_DOMAIN = '.shariftrace.ir'
-else:
-    AUTH_COOKIE_DOMAIN = None
+AUTH_COOKIE_SAMESITE = 'Lax'
+
+AUTH_COOKIE_DOMAIN = None
 
 # CORS
-CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000',
-    'http://127.0.0.1:3000',
-    'https://shariftrace.ir',
-    'https://personnel.shariftrace.ir',
-    'https://admin.shariftrace.ir',
-    'https://enduser.shariftrace.ir',
-    'https://www.shariftrace.ir',
+    'http://localhost:3000'
 ]
 CORS_ALLOW_HEADERS = list(default_headers) + ['Set-Cookie']
 CSRF_TRUSTED_ORIGINS = [
     'https://*.127.0.0.1',
     'http://localhost:3000',
-    'http://localhost:8000',
-    'https://shariftrace.ir',
-    'https://api.shariftrace.ir',
+    'http://localhost:8000'
 ]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'users.UserAccount'
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': ['users.authentication.CustomJWTAuthentication'],
+    'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permissions.IsAuthenticated'],
+    'EXCEPTION_HANDLER': 'drf_standardized_errors.handler.exception_handler',
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+}
+
+DJOSER = {
+    'PASSWORD_RESET_CONFIRM_URL': 'password-reset/{uid}/{token}',
+    'USER_ID_FIELD': 'phone_number',
+    'LOGIN_FIELD': 'phone_number',
+    'SEND_ACTIVATION_EMAIL': False,
+    'SEND_CONFIRMATION_EMAIL': False,
+    'SEND_PASSWORD_RESET_CONFIRMATION_EMAIL': False,
+    'ACTIVATION_URL': '/activation/{uid}/{token}',
+    'USER_CREATE_PASSWORD_RETYPE': True,
+    'PASSWORD_RESET_CONFIRM_RETYPE': True,
+    'TOKEN_MODEL': None,
+    'messages': 'users.constants.CustomMessages',
+    'SOCIAL_AUTH_ALLOWED_REDIRECT_URIS': getenv('REDIRECT_URLS', 'http://localhost:3000/auth/google').split()
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=365),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=30),
+    'SIGNING_KEY': SECRET_KEY,
+    'UPDATE_LAST_LOGIN': True,
+    'TOKEN_OBTAIN_SERIALIZER': 'users.serializers.CustomTokenObtainPairSerializer',
+}
+
+DRF_STANDARDIZED_ERRORS = {'EXCEPTION_FORMATTER_CLASS': 'general.exceptions.MyExceptionFormatter'}
+
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': f"redis://{os.getenv('REDIS_HOST', 'localhost')}:{os.getenv('REDIS_PORT', '6379')}/1",
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        }
+    }
+}

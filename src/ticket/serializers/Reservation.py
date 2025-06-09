@@ -1,0 +1,59 @@
+from rest_framework import serializers
+from ticket.models import StationLocation, LocationType, Ticket, TicketSection, Reservation
+from ticket.serializers import TicketSectionModelSerializer
+from company.models import Vehicle, Company, Section, SectionType, Train, Bus, AirPlane
+from company.serializers import TrainReadSerializer, BusReadSerializer, AirplaneReadSerializer, SectionReadSerializer
+
+
+class ReservationWriteSerializer(serializers.Serializer):
+    ticket_section = serializers.PrimaryKeyRelatedField(
+        queryset = TicketSection.objects.all(), required=True
+    )
+
+
+    def validate(self, attrs):
+        user_reserving = Reservation.objects.filter(ticket_section=attrs['ticket_section'], user=self.context['user']).count()
+        if user_reserving != 0:
+            raise serializers.ValidationError('You have already reserved a seat in this section.')
+
+        section = attrs['ticket_section'].section
+        seats_reserved = Reservation.objects.filter(ticket_section=attrs['ticket_section']).count()
+
+        if section.end_number - section.start_number + 1 == seats_reserved:
+            raise serializers.ValidationError('Section Capacity is full.')
+        
+        else:
+            seat_num = seats_reserved + 1
+
+        attrs['seat_num'] = seat_num
+
+        
+        return attrs
+    
+
+    def create(self, validated_data):
+        reservation = Reservation.objects.create(
+            ticket_section = validated_data['ticket_section'],
+            seat_number = validated_data['seat_num'],
+            user = self.context['user']
+            )
+
+        return reservation
+
+
+class ReservationReadSerializer(serializers.ModelSerializer):
+    ticket_section = TicketSectionModelSerializer()
+
+    class Meta:
+        model = Reservation
+        fields = '__all__'
+
+
+class ReservationGetIDSerializezr(serializers.Serializer):
+    reservation = serializers.PrimaryKeyRelatedField(
+        queryset = Reservation.objects.all(), required=True
+    )
+
+    def validate_reservartion(self, obj):
+        if obj.user != self.context['user']:
+            raise serializers.ValidationError('This reservation does not belong to this user.')

@@ -14,6 +14,10 @@ services:
       PDB_NAME: $PDB_NAME
       PDB_PORT: $PDB_PORT
       PDB_HOST: alibaba-pdb
+      REDIS_HOST: alibaba-redis
+      REDIS_PORT: 6379
+      EMAIL_ADDRESS: $EMAIL_ADDRESS
+      EMAIL_PASSWORD: $EMAIL_PASSWORD
       GUNICORN_WORKER_NUMBER: $MY_SERVICE_GUNICORN_WORKER_NUMBER
       GUNICORN_TIMEOUT: $MY_SERVICE_GUNICORN_TIMEOUT
     depends_on:
@@ -27,7 +31,11 @@ services:
       POSTGRES_DB: $PDB_NAME
     volumes:
       - alibaba_local_db_mount:/var/lib/postgresql/data
-
+      
+  alibaba-redis:
+    image: redis:7
+    ports:
+      - '6379:6379'
 
 volumes:
   alibaba_local_db_mount: {}

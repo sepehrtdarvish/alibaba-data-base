@@ -7,21 +7,13 @@ from users.models import UserAccount
 class RequestOTPSerializer(serializers.Serializer):
     receiver = serializers.EmailField(required=True)
 
-    def validate(self, attrs):
-        super().validate(attrs)
-        if not UserAccount.objects.filter(email=attrs['receiver']).exists():
-            # TODO: remove user creation
-            UserAccount.objects.create_company_owner(email=attrs['receiver'])
-
-            # raise serializers.ValidationError('User does not exist')
-        else:
-            UserAccount.objects.filter(email=attrs['receiver']).first()
-
-        return attrs
-
-
 
 class VerifyOtpRequestSerializer(serializers.Serializer):
     email = serializers.EmailField(required=True)
     code = serializers.CharField(required=True)
 
+    def validate_email(self, obj):
+        if UserAccount.objects.filter(email=obj).exists():
+            raise serializers.ValidationError("User already exsits.")
+        
+        return obj
