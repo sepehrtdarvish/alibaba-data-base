@@ -52,6 +52,7 @@ class ReportModelSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+
 class ReportResponseSerializer(serializers.Serializer):
     report = serializers.PrimaryKeyRelatedField(
         queryset = Report.objects.all(),
