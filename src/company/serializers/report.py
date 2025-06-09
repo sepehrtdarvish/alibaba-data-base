@@ -57,7 +57,7 @@ class ReportResponseSerializer(serializers.Serializer):
         queryset = Report.objects.all(),
         required = True
     )
-    response = serializers.CharField(max_lenght=100)
+    response = serializers.CharField(max_length=100)
 
     def create(self, validated_data):
         report = validated_data['report']
