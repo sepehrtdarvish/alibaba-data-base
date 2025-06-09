@@ -7,7 +7,7 @@ from general.utils.otp import generate_otp, generate_user_token, verify_otp
 from general.utils.gmail_sender import GmailSender
 
 from users.models import UserAccount
-from users.serializers import RequestOTPSerializer, VerifyOtpRequestSerializer
+from users.serializers import RequestOTPSerializer, VerifyOtpRequestSerializer, RequestLoginOTPSerializer
 
 
 class OTPView(APIView):
@@ -70,3 +70,40 @@ class OTPView(APIView):
             return Response(data={'token': token}, status=status.HTTP_200_OK)
         else:
             return Response(data={"message": "Invalid code"}, status=status.HTTP_401_UNAUTHORIZED)
+
+class LoginOTPView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        serializer = RequestLoginOTPSerializer(data=request.query_params)
+        serializer.is_valid(raise_exception=True)
+
+        user = serializer.validated_data['user']
+        try:
+            verification_code = generate_otp(user.email)
+                
+            gmail_sender = GmailSender()    
+                
+            gmail_sender.send(
+                dest_gmail_address=user.email,
+                subject='Alibaba Verification Code',
+                body = f"""
+                    Hello,
+                    We received a request to verify your account.
+
+                    Your verification code is:
+                    {verification_code}
+
+                    Please enter this code within the next 10 minutes.
+
+                    If you did not request this code, please ignore this email.
+
+                    Best regards,  
+                    Alibaba Support Team.
+                    """
+                )
+            
+            return Response(data={"message": "OTP sent."}, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response(data={"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
