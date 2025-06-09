@@ -97,8 +97,9 @@ class LoginSerializer(serializers.Serializer):
 
     def validate(self, attrs):
         identifier = attrs['identifier']
-        type = detect_identifier_type(identifier=identifier)
-        user = get_user_or_404(identifier=identifier, type=type)
+        type = attrs['type']
+        identifier_type = detect_identifier_type(identifier=identifier)
+        user = get_user_or_404(identifier=identifier, type=identifier_type)
         
         if type == 'otp':
             if attrs.get('password', None):
@@ -106,9 +107,10 @@ class LoginSerializer(serializers.Serializer):
             if not attrs.get('otp', None):
                 raise serializers.ValidationError('Login with otp requires OTP Code')
         else:
-            if attrs.get('password', None):
+
+            if not attrs.get('password', None):
                 raise serializers.ValidationError('Login with password requires password')
-            if not attrs.get('otp', None):
+            if attrs.get('otp', None):
                 raise serializers.ValidationError('Login with password does not require password')
 
         attrs['user'] = user
