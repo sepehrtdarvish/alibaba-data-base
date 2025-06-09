@@ -12,7 +12,7 @@ class ProfileView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
-    def get(self, request):
+    def update(self, request):
         serializer = ProfileSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.update()
