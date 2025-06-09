@@ -15,3 +15,4 @@ django-cors-headers
 django-phonenumber-field
 djoser
 drf-standardized-errors
+django-redis

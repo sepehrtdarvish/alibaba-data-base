@@ -12,3 +12,8 @@ class VerifyOtpRequestSerializer(serializers.Serializer):
     email = serializers.EmailField(required=True)
     code = serializers.CharField(required=True)
 
+    def validate_email(self, obj):
+        if UserAccount.objects.filter(email=obj).exists():
+            raise serializers.ValidationError("User already exsits.")
+        
+        return obj

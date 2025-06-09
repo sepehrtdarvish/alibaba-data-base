@@ -52,10 +52,10 @@ class OTPView(APIView):
 
     def post(self, request):
         serializer = VerifyOtpRequestSerializer(data=request.data)
-        serializer.is_valid()
+        serializer.is_valid(raise_exception=True)
 
-        email = serializer.validated_data['email']
-        code = serializer.validated_data['code']
+        email = serializer.validated_data.get('email')
+        code = serializer.validated_data.get('code')
 
         if verify_otp(email, code):
             UserAccount.objects.create(

@@ -210,3 +210,14 @@ SIMPLE_JWT = {
 }
 
 DRF_STANDARDIZED_ERRORS = {'EXCEPTION_FORMATTER_CLASS': 'general.exceptions.MyExceptionFormatter'}
+
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': f"redis://{os.getenv('REDIS_HOST', 'localhost')}:{os.getenv('REDIS_PORT', '6379')}/1",
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        }
+    }
+}

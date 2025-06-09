@@ -5,5 +5,7 @@ from .views import *
 urlpatterns = [
     path('vehicle/train/', TrainView.as_view()),
     path('vehicle/', VehicleView.as_view()),
-    path('policy/', CompanyPolicyView.as_view())
+    path('policy/', CompanyPolicyView.as_view()),
+    path('report/', ReportView.as_view()),
+    path('report/company/', ReportCompanyView.as_view(),)
 ]

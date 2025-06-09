@@ -7,6 +7,10 @@ echo "Waiting for my service Postgres Database"
 while ! nc -z ${PDB_HOST} ${PDB_PORT}; do sleep 2; done
 echo "Connected to my Database"
 
+echo "Waiting for Redis"
+while ! nc -z ${REDIS_HOST} ${REDIS_PORT}; do sleep 2; done
+echo "Connected to Redis"
+
 if [[ $# -gt 0  ]]; then
 	echo "Execute Command..."
 	INPUT=$@
