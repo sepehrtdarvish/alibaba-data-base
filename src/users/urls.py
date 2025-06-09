@@ -9,5 +9,6 @@ urlpatterns = [
     path('jwt/create/', CustomTokenObtainPairView.as_view()),
     path('jwt/refresh/', CustomTokenRefreshView.as_view()),
     path('jwt/verify/', CustomTokenVerifyView.as_view()),
-    path('admin/company-owner/', AdminCompanyOwner.as_view())
+    path('admin/company-owner/', AdminCompanyOwner.as_view()),
+    path('profile/', ProfileView.as_view())
 ]
