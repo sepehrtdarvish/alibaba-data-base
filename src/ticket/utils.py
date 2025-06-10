@@ -22,10 +22,6 @@ def get_refund_amount(reservation):
 
 
 def reserve_ticket(payment_token, user_id, ticket_section_id, seat_number):
-    seat_lock_key = f"seat_lock_{ticket_section_id}_{seat_number}"
-
-    cache.set(seat_lock_key, user_id, timeout=600)
-
     cache.set(
         f"r_token_{payment_token}",
         {

@@ -8,5 +8,6 @@ urlpatterns = [
     path('location/admin/', AdminLocationView.as_view()),
     path('', TicketView.as_view()),
     path('reserve/', ReservationView.as_view()),
-    path('reserve/cancel/<str:reservation_id>/', CancelReservationView.as_view()),
+    path('reserve/payment/', CompleteReservationView.as_view()),
+    path('reserve/cancel/<str:reservation_id>/', CancelReservationView.as_view())
 ]

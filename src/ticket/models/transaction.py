@@ -8,7 +8,7 @@ import uuid
 class Wallet(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     balance = models.FloatField()
-    user = models.ForeignKey("users.UserAccount", on_delete=models.CASCADE)
+    user = models.OneToOneField("users.UserAccount", on_delete=models.CASCADE, related_name='wallet')
     updated_at = models.DateTimeField(auto_now=True)
 
 

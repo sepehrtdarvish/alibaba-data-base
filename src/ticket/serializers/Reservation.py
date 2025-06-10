@@ -46,8 +46,8 @@ class ReservationWriteSerializer(serializers.Serializer):
     
 
     def create(self, validated_data):
-        payment_token = uuid.uuid4().hex
-        
+        payment_token = str(uuid.uuid4())
+
         reserve_ticket(
             payment_token=payment_token,
             user_id=validated_data['user'].id,
@@ -82,18 +82,16 @@ class CompleteResrvationSerializer(serializers.Serializer):
 
     def validate(self, attrs):
         payment_token = attrs['payment_token']
-        payment_type = attrs['payment_type']
-
-        reservation = cache.get(f'r_token_{payment_token}')
+        payment_type = str(attrs['payment_type'])
         
-
+        reservation = cache.get(f'r_token_{payment_token}')
         if reservation:
             attrs['reservation'] = reservation
         else:
             raise serializers.ValidationError('No reservation found!')
         
         user = UserAccount.objects.filter(id=reservation['user_id']).first()
-        ticket_section = TicketSection.objects.filter(ticket_section=reservation['ticket_section_id']).first()
+        ticket_section = TicketSection.objects.filter(id=reservation['ticket_section_id']).first()
 
         attrs['user'] = user
         attrs['ticket_section'] = ticket_section

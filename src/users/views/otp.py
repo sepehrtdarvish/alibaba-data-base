@@ -2,12 +2,14 @@ from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from django.db import transaction
 
 from general.utils.otp import generate_otp, generate_user_token, verify_otp
 from general.utils.gmail_sender import GmailSender
 
 from users.models import UserAccount
 from users.serializers import RequestOTPSerializer, VerifyOtpRequestSerializer, RequestLoginOTPSerializer
+from ticket.models import Wallet
 
 
 class OTPView(APIView):
@@ -58,12 +60,17 @@ class OTPView(APIView):
         code = serializer.validated_data.get('code')
 
         if verify_otp(email, code):
-            UserAccount.objects.create(
-                email = email,
-                is_superuser = False,
-                is_company_owner = False,
-                is_staff = False
-            )
+            with transaction.atomic():
+                user = UserAccount.objects.create(
+                    email = email,
+                    is_superuser = False,
+                    is_company_owner = False,
+                    is_staff = False
+                )
+                Wallet.objects.create(
+                    balance = 0,
+                    user = user
+                )
 
             token = generate_user_token(email)
 
