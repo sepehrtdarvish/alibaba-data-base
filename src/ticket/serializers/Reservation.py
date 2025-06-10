@@ -41,6 +41,7 @@ class ReservationWriteSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         payment_token = uuid.uuid4().hex
+        
         reserve_ticket(
             payment_token=payment_token,
             user_id=validated_data['user'].id,
