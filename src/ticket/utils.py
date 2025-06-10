@@ -1,5 +1,5 @@
 from django.utils import timezone
-
+from django.core.cache import cache
 
 
 def get_refund_amount(reservation):
@@ -18,3 +18,15 @@ def get_refund_amount(reservation):
 
 
         return refund_amount
+
+
+def reserve_ticket(user_id, ticket_seat_id, seat_number, payment_token):
+    cache.set(
+        f'reservation_{user_id}',
+            {
+                "ticket_seat_id": ticket_seat_id,
+                "seat_number": seat_number,
+                "payment_token": payment_token
+            },
+            timeout=600
+        ) # Store for 10 minutes
