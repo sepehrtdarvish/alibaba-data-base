@@ -6,7 +6,7 @@ import uuid
 
 from users.models import UserAccount
 
-from ticket.models import TicketSection, Reservation, Transaction
+from ticket.models import TicketSection, Reservation, Transaction, TransactionType
 from ticket.serializers import TicketSectionModelSerializer
 from ticket.utils import get_reserved_seats, find_seat_number, reserve_ticket
 
@@ -78,11 +78,9 @@ class ReservationGetIDSerializezr(serializers.Serializer):
 
 class CompleteResrvationSerializer(serializers.Serializer):
     payment_token = serializers.UUIDField(required=True)
-    payment_type = serializers.ChoiceField(choices=['wallet', 'transaction'])
 
     def validate(self, attrs):
         payment_token = attrs['payment_token']
-        payment_type = str(attrs['payment_type'])
         
         reservation = cache.get(f'r_token_{payment_token}')
         if reservation:
@@ -96,27 +94,27 @@ class CompleteResrvationSerializer(serializers.Serializer):
         attrs['user'] = user
         attrs['ticket_section'] = ticket_section
 
-        if payment_type == 'wallet':
-            balance = user.wallet.balance
-            if ticket_section.price > balance:
-                raise serializers.ValidationError('wallet balance not enough.')         
+        balance = user.wallet.balance
+        if ticket_section.price > balance:
+            raise serializers.ValidationError('wallet balance not enough.')         
 
         return attrs
 
 
     def create(self, validated_data):
-        payment_type = validated_data['payment_type']
 
         with transaction.atomic():
-            if payment_type == 'wallet':
-                Transaction.objects.create(
+            new_transaction = Transaction.objects.create(
+                amount = validated_data['ticket_section'].price,
+                wallet = validated_data['user'].wallet,
+                Type = TransactionType.WITHDRAWAL
+            )
 
-                )
             reservation = Reservation.objects.create(
                 user = validated_data['user'],
                 ticket_section = validated_data['ticket_section'],
                 seat_number = validated_data['reservation']['seat_number'],
-                transaction = validated_data['transaction']
+                transaction = new_transaction
             )
 
             return reservation

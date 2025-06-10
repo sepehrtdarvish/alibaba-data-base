@@ -83,3 +83,6 @@ class CompleteReservationView(APIView):
     def post(self, request):
         serializer = CompleteResrvationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        reservation = serializer.save()
+
+        return Response(ReservationReadSerializer(reservation).data, status=status.HTTP_200_OK)
