@@ -20,7 +20,7 @@ class TransactionType(models.TextChoices):
 
 class Transaction(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    Type = models.CharField(max_length=20, choices=TransactionType.choices)
+    type = models.CharField(max_length=20, choices=TransactionType.choices)
     amount = models.FloatField()
     wallet = models.ForeignKey(Wallet, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)

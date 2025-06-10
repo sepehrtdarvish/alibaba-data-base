@@ -107,7 +107,7 @@ class CompleteResrvationSerializer(serializers.Serializer):
             new_transaction = Transaction.objects.create(
                 amount = validated_data['ticket_section'].price,
                 wallet = validated_data['user'].wallet,
-                Type = TransactionType.WITHDRAWAL
+                type = TransactionType.WITHDRAWAL
             )
 
             reservation = Reservation.objects.create(
