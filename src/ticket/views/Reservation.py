@@ -9,13 +9,13 @@ from django.db import transaction
 
 from ticket.utils import get_refund_amount
 from ticket.models import StationLocation, LocationType, Ticket, Reservation
-from ticket.serializers import GetLocationSerializer, ReservationGetIDSerializezr, ReservationReadSerializer, ReservationWriteSerializer
+from ticket.serializers import CompleteResrvationSerializer, ReservationGetIDSerializezr, ReservationReadSerializer, ReservationWriteSerializer
 
 from company.models import RefundRule
 
 from users.decorators import company_required
 
-from transaction.models import Transaction, TransactionType
+from ticket.models import Transaction, TransactionType
 
 from django.conf import settings
 
@@ -75,3 +75,11 @@ class CancelReservationView(APIView):
             )
 
         return Response(status=status.HTTP_200_OK)
+
+
+class CompleteReservationView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = CompleteResrvationSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)

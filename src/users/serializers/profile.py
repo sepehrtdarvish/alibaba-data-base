@@ -4,8 +4,8 @@ from users.models import Profile
 
 class ProfileSerializer(serializers.Serializer):
     full_name = serializers.CharField(max_length=100, required=False)
-    home_town = serializers.CharField(max_length=40, require=False)
-    birthdate = serializers.DateField(require=False)
+    home_town = serializers.CharField(max_length=40, required=False)
+    birthdate = serializers.DateField(required=False)
 
     def create(self, validated_data):
         user = self.context['user']
