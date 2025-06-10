@@ -26,9 +26,9 @@ class ReservationView(APIView):
     def post(self, request):
         serializer = ReservationWriteSerializer(data=request.data, context={'user': request.user})
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        payment_token = serializer.save()
 
-        return Response(status=status.HTTP_200_OK)
+        return Response({'token': payment_token}, status=status.HTTP_200_OK)
     
     def get(self, request):
         user = request.user

@@ -1,9 +1,12 @@
 from rest_framework import serializers
-from ticket.models import StationLocation, LocationType, Ticket, TicketSection, Reservation
-from ticket.serializers import TicketSectionModelSerializer
-from company.models import Vehicle, Company, Section, SectionType, Train, Bus, AirPlane
-from company.serializers import TrainReadSerializer, BusReadSerializer, AirplaneReadSerializer, SectionReadSerializer
+from django.core.cache import cache
+import uuid
 
+
+from ticket.models import TicketSection, Reservation
+from ticket.serializers import TicketSectionModelSerializer
+
+from ticket.utils import get_reserved_seats, find_seat_number, reserve_ticket
 
 class ReservationWriteSerializer(serializers.Serializer):
     ticket_section = serializers.PrimaryKeyRelatedField(
@@ -12,33 +15,40 @@ class ReservationWriteSerializer(serializers.Serializer):
 
 
     def validate(self, attrs):
-        user_reserving = Reservation.objects.filter(ticket_section=attrs['ticket_section'], user=self.context['user']).count()
+        user = self.context['user']
+        ticket_section = attrs['ticket_section']
+
+        user_reserving = Reservation.objects.filter(ticket_section=ticket_section, user=user).count()
         if user_reserving != 0:
             raise serializers.ValidationError('You have already reserved a seat in this section.')
 
-        section = attrs['ticket_section'].section
-        seats_reserved = Reservation.objects.filter(ticket_section=attrs['ticket_section']).count()
+        cached_seats = get_reserved_seats(ticket_section_id=ticket_section.id)
 
-        if section.end_number - section.start_number + 1 == seats_reserved:
-            raise serializers.ValidationError('Section Capacity is full.')
-        
-        else:
-            seat_num = seats_reserved + 1
+        reservations = Reservation.objects.filter(ticket_section=attrs['ticket_section'])
+        reserved_seats_db = [reservation.seat_number for reservation in reservations]
 
-        attrs['seat_num'] = seat_num
+        reserved_seats = set(map(int, reserved_seats_db)) | set(map(int, cached_seats))
 
-        
+        new_seat_number = find_seat_number(capacity=ticket_section.section.capacity, reserved_seats=reserved_seats)
+        if not new_seat_number:
+            raise serializers.ValidationError('Capacity Full!')
+
+        attrs['seat_number'] = new_seat_number
+        attrs['user'] = user
+
         return attrs
     
 
     def create(self, validated_data):
-        reservation = Reservation.objects.create(
-            ticket_section = validated_data['ticket_section'],
-            seat_number = validated_data['seat_num'],
-            user = self.context['user']
-            )
+        payment_token = uuid.uuid4().hex
+        reserve_ticket(
+            payment_token=payment_token,
+            user_id=validated_data['user'].id,
+            ticket_section_id=validated_data['ticket_section_id'],
+            seat_number=validated_data['seat_number'],
+        )
 
-        return reservation
+        return payment_token
 
 
 class ReservationReadSerializer(serializers.ModelSerializer):
