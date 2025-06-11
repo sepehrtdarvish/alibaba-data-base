@@ -81,7 +81,7 @@ class ReportResponseSerializer(serializers.Serializer):
     def create(self, validated_data):
         report = validated_data['report']
         response = validated_data.get('response')
-        update_at = timezone.now()
+        updated_at = timezone.now()
         inspected_by_id = self.context['user'].id
         proccessed_at = timezone.now()
 
@@ -93,16 +93,19 @@ class ReportResponseSerializer(serializers.Serializer):
 
         with connection.cursor() as cursor:
             cursor.execute("""
-                UPDATE report
+                UPDATE company_report
                 SET response = %s,
-                    update_at = %s,
+                    updated_at = %s,
                     inspected_by_id = %s,
                     proccessed_at = %s
                 WHERE id = %s;
             """, [
                 response,
-                update_at,
+                updated_at,
                 inspected_by_id,
                 proccessed_at,
                 report.id
             ])
+
+        updated_report = Report.objects.get(id=report.id)
+        return updated_report

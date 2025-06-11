@@ -18,6 +18,7 @@ class ReportView(APIView):
 
         return Response(status=status.HTTP_200_OK)
     
+
     def get(self, request):
         with connection.cursor() as cursor:
             cursor.execute("""
@@ -32,20 +33,17 @@ class ReportView(APIView):
         return Response(serializer.data)
 
 class ReportCompanyView(APIView):
-
+    permission_classes = [IsAuthenticated, IsAdminUser]
     def post(self, request):
-        serializer = ReportResponseSerializer(data=request.data, context=request.user)
+        serializer = ReportResponseSerializer(data=request.data, context={'user':request.user})
         serializer.is_valid(raise_exception=True)
+        report = serializer.save()
         
-        return Response
-
-
+        return Response(ReportModelSerializer(report).data, status=status.HTTP_200_OK)
 
 
     def get(self, request):
         reports = Report.objects.all()
         serializer = ReportModelSerializer(reports, many=True)
         
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    
+        return Response(serializer.data, status=status.HTTP_200_OK)   
