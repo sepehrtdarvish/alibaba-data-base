@@ -5,7 +5,7 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from django.utils.decorators import method_decorator
 from users.decorators import company_required
-
+from django.db import connection
 from company.models import Report
 from company.serializers import ReportWriteSerializer, ReportModelSerializer, ReportResponseSerializer
 
@@ -19,11 +19,17 @@ class ReportView(APIView):
         return Response(status=status.HTTP_200_OK)
     
     def get(self, request):
-        reports = Report.objects.filter(submitted_by=request.user)
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT id FROM company_report
+                WHERE submitted_by_id = %s
+                ORDER BY created_at DESC;
+            """, [request.user.id])
+            report_ids = [row[0] for row in cursor.fetchall()]
+
+        reports = Report.objects.filter(id__in=report_ids)
         serializer = ReportModelSerializer(reports, many=True)
-
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
+        return Response(serializer.data)
 
 class ReportCompanyView(APIView):
 

@@ -6,33 +6,30 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from django.utils.decorators import method_decorator
 from users.decorators import company_required
 
-from company.models import Train
-from company.serializers import TrainWriteSerializer, GetVehicleSerializer, TrainReadSerializer
-
-class TrainView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    @method_decorator(company_required)
-    def post(self, request):
-        serializer = TrainWriteSerializer(data=request.data, context={'company': request.company})
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-
-        return Response(status=status.HTTP_200_OK)
+from company.serializers import VehicleWriteSerializer, GetVehicleSerializer, VehicleReadSerializer
+from company.models import Vehicle
 
 class VehicleView(APIView):
     permission_classes = [IsAuthenticated]
+
+
+    @method_decorator(company_required)
+    def post(self, request):
+        serializer = VehicleWriteSerializer(data=request.data, context={'company': request.company})
+        serializer.is_valid(raise_exception=True)
+        vehicle = serializer.save()
+
+        return Response(VehicleReadSerializer(vehicle).data ,status=status.HTTP_200_OK)
+
 
     def get(self, request):
         serializer = GetVehicleSerializer(data=request.query_params)
         serializer.is_valid(raise_exception=True)
 
-        vehicle_model = serializer.validated_data['vehicle_model']
-        vehicle_serializer = serializer.validated_data['vehicle_read_serializer']
-
         vehicle = serializer.validated_data.get('vehicle', None)
+        type = serializer.validated_data.get('type')
 
         if vehicle:
-            return Response(vehicle_serializer(vehicle).data, status=status.HTTP_200_OK)
+            return Response(VehicleReadSerializer(vehicle).data, status=status.HTTP_200_OK)
         else:
-            return Response(vehicle_serializer(vehicle_model.objects.all(), many=True).data, status=status.HTTP_200_OK)
+            return Response(VehicleReadSerializer(Vehicle.objects.filter(type=type), many=True).data, status=status.HTTP_200_OK)

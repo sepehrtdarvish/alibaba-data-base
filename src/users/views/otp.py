@@ -2,15 +2,16 @@ from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from django.db import transaction
+from django.db import connection, transaction
 
 from general.utils.otp import generate_otp, generate_user_token, verify_otp
 from general.utils.gmail_sender import GmailSender
-
+from django.contrib.auth.hashers import make_password
 from users.models import UserAccount
 from users.serializers import RequestOTPSerializer, VerifyOtpRequestSerializer, RequestLoginOTPSerializer
 from ticket.models import Wallet
 
+import uuid
 
 class OTPView(APIView):
     permission_classes = [AllowAny]
@@ -60,6 +61,7 @@ class OTPView(APIView):
         code = serializer.validated_data.get('code')
 
         if verify_otp(email, code):
+            """
             with transaction.atomic():
                 user = UserAccount.objects.create(
                     email = email,
@@ -70,7 +72,25 @@ class OTPView(APIView):
                 Wallet.objects.create(
                     balance = 0,
                     user = user
-                )
+                )"""
+            unusable_password = make_password(None)
+            user_id = str(uuid.uuid4())
+            wallet_id = str(uuid.uuid4())
+
+            with transaction.atomic():
+
+                with connection.cursor() as cursor:
+                    cursor.execute("""
+                        INSERT INTO users_useraccount (id, email, password, is_superuser, is_company_owner, is_staff)
+                        VALUES (%s, %s, %s, FALSE, FALSE, FALSE)
+                        RETURNING id;
+                    """, [user_id, email, unusable_password])
+                    user_id = cursor.fetchone()[0]
+
+                    cursor.execute("""
+                        INSERT INTO ticket_wallet (balance, user_id, id)
+                        VALUES (0, %s, %s);
+                    """, [user_id, wallet_id])
 
             token = generate_user_token(email)
 

@@ -5,10 +5,11 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from django.utils.decorators import method_decorator
 from django.db.models import Q
-
-
-from ticket.models import StationLocation, LocationType, Ticket
-from ticket.serializers import GetLocationSerializer, TicketQuerySerializer, TicketWriteSerializer, TicketModelSerializer
+from django.db import connection
+from company.models import Company
+from company.serializers import CompanyReadSerializer
+from ticket.models import Ticket
+from ticket.serializers import TicketQuerySerializer, TicketWriteSerializer, TicketModelSerializer
 from users.decorators import company_required
 
 from django.conf import settings
@@ -27,16 +28,23 @@ class CompanyOwnerTicketView(APIView):
 
         return Response(TicketModelSerializer(ticket).data, status=status.HTTP_200_OK)
     
+class CompanyView(APIView):
+    def get(self, request):
+        companies = Company.objects.all()
+        
+        return Response(CompanyReadSerializer(companies, many=True).data, status=status.HTTP_200_OK)
+    
 
 class TicketView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+
         query = Q()
 
         serializer = TicketQuerySerializer(data=request.query_params)
         serializer.is_valid(raise_exception=True)
-
+        """
         origin = serializer.validated_data.get('origin', None)
         if origin:
             query &= Q(origin=origin)
@@ -62,5 +70,43 @@ class TicketView(APIView):
             query &= Q(class_type=class_type)
 
         tickets = Ticket.objects.filter(query)
+        """
+        tickets = self.get_filtered_tickets_sql(serializer.validated_data)
 
         return Response(TicketModelSerializer(tickets, many=True).data, status=status.HTTP_200_OK)
+    
+    def get_filtered_tickets_sql(self, params):
+        sql = "SELECT * FROM ticket_ticket WHERE 1=1"
+        values = []
+
+        origin = params.get('origin')
+        if origin:
+            sql += " AND origin = %s"
+            values.append(origin)
+
+        destination = params.get('destination')
+        if destination:
+            sql += " AND destination = %s"
+            values.append(destination)
+
+        start_at = params.get('start_at')
+        if start_at:
+            sql += " AND start_at >= %s"
+            values.append(start_at)
+
+        min_price = params.get('min_price')
+        if min_price:
+            sql += " AND price >= %s"
+            values.append(min_price)
+
+        max_price = params.get('max_price')
+        if max_price:
+            sql += " AND price <= %s"
+            values.append(max_price)
+
+
+        with connection.cursor() as cursor:
+            cursor.execute(sql, values)
+            ids = [row[0] for row in cursor.fetchall()]
+
+        return Ticket.objects.filter(id__in=ids).prefetch_related('sections__section__vehicle')

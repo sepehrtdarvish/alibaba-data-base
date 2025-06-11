@@ -17,3 +17,8 @@ class WalletView(APIView):
         serializer.save()
 
         return Response(status=status.HTTP_200_OK)
+    
+    def get(self, request):
+        balance = request.user.wallet.balance
+
+        return Response(data={"balance": balance}, status=status.HTTP_200_OK)

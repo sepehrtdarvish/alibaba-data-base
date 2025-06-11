@@ -9,5 +9,4 @@ class Reservation(models.Model):
     seat_number = models.PositiveIntegerField()
     transaction = models.ForeignKey('ticket.Transaction', on_delete=models.CASCADE, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
     is_cancelled = models.BooleanField(default=False)

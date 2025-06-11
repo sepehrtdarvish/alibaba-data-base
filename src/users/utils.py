@@ -1,6 +1,7 @@
 import re
 from users.models import UserAccount
 from users.exceptions import UserNotFoundException
+from django.db import connection
 
 def detect_identifier_type(identifier):
     if re.match(r"^\+?\d{10,15}$", identifier):

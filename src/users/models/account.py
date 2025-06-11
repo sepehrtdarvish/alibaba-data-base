@@ -39,12 +39,12 @@ class UserAccount(AbstractBaseUser, PermissionsMixin):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     email = models.EmailField(max_length=150, unique=True, null=True, blank=True)
     username = models.CharField(max_length=150, unique=True, null=True, blank=True)
-    phone_number = models.CharField(max_length=11)
-    is_active = models.BooleanField(default=False)
-    is_superuser = models.BooleanField(default=False)
-    is_company_owner = models.BooleanField(default=False)
-    is_staff = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
+    phone_number = models.CharField(max_length=11, null=True)
+    is_active = models.BooleanField(default=False, null=True)
+    is_superuser = models.BooleanField(default=False, null=True)
+    is_company_owner = models.BooleanField(default=False, null=True)
+    is_staff = models.BooleanField(default=False, null=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
     objects = UserAccountManager()
 
     USERNAME_FIELD = 'username'
