@@ -51,7 +51,6 @@ INSTALLED_APPS = [
     "users",
     "ticket",
     "company",
-    "transaction",
     "phonenumber_field",
 ]
 

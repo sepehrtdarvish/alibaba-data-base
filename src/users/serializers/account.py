@@ -6,6 +6,7 @@ from django.db import transaction
 
 from company.models import Company
 from general.utils.otp import generate_user_token, get_user_by_token
+from users.utils import get_user_or_404, detect_identifier_type
 import re
 
 
@@ -85,3 +86,33 @@ class CompanyOwnerWriteSerializer(serializers.Serializer):
             )
 
         return user
+
+
+
+class LoginSerializer(serializers.Serializer):
+    identifier = serializers.CharField(max_length=100, required=True)
+    type = serializers.ChoiceField(choices=['otp', 'password'], required=True)
+    password = serializers.CharField(max_length=100, required=False)
+    otp = serializers.CharField(max_length=6, required=False)
+
+    def validate(self, attrs):
+        identifier = attrs['identifier']
+        type = attrs['type']
+        identifier_type = detect_identifier_type(identifier=identifier)
+        user = get_user_or_404(identifier=identifier, type=identifier_type)
+        
+        if type == 'otp':
+            if attrs.get('password', None):
+                raise serializers.ValidationError('Login with otp does not require password')
+            if not attrs.get('otp', None):
+                raise serializers.ValidationError('Login with otp requires OTP Code')
+        else:
+
+            if not attrs.get('password', None):
+                raise serializers.ValidationError('Login with password requires password')
+            if attrs.get('otp', None):
+                raise serializers.ValidationError('Login with password does not require password')
+
+        attrs['user'] = user
+        
+        return attrs

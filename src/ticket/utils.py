@@ -1,5 +1,6 @@
 from django.utils import timezone
-
+from django.core.cache import cache
+import time
 
 
 def get_refund_amount(reservation):
@@ -18,3 +19,50 @@ def get_refund_amount(reservation):
 
 
         return refund_amount
+
+
+def reserve_ticket(payment_token, user_id, ticket_section_id, seat_number):
+    cache.set(
+        f"r_token_{payment_token}",
+        {
+            'user_id': user_id,
+            'ticket_section_id': ticket_section_id,
+            'seat_number': seat_number,
+            'payment_token': payment_token,
+            'reserved_at': int(time.time())
+        },
+        timeout=600
+    )
+
+    reserved_map_key = f"reserved_seats_map_{ticket_section_id}"
+    reserved_map = cache.get(reserved_map_key) or {}
+
+    expires_at = int(time.time()) + 600
+    reserved_map[seat_number] = expires_at
+
+    cache.set(reserved_map_key, reserved_map, timeout=600)
+
+    
+
+def get_reserved_seats(ticket_section_id):
+    reserved_map_key = f"reserved_seats_map_{ticket_section_id}"
+    reserved_map = cache.get(reserved_map_key) or {}
+
+    now = int(time.time())
+    new_reserved_map = {}
+    still_reserved = []
+
+    for seat, expires_at in reserved_map.items():
+        if expires_at > now:
+            still_reserved.append(seat)
+            new_reserved_map[seat] = expires_at
+
+    cache.set(reserved_map_key, new_reserved_map, timeout=600)
+
+    return still_reserved
+
+def find_seat_number(capacity, reserved_seats):
+    for i in range(1, capacity + 1):
+        if i not in reserved_seats:
+            return i
+    return None

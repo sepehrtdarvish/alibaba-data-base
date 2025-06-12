@@ -7,69 +7,17 @@ class VehicleTypes(models.TextChoices):
     Bus = 'Bus'
 
 
-class Services(models.Model):
-    catering_service = models.BooleanField()
-    wifi_access = models.BooleanField()
-
-
-class TrainServices(Services):
-    flatbed_wagon = models.BooleanField(default=False)
-    air_conditioning = models.BooleanField(default=False)
-    television = models.BooleanField(default=False)
-
-
-class AirplaneServices(Services):
-    bendable_seats = models.BooleanField(default=False)
-
-
-class BusServices(Services):
-    individual_screen = models.BooleanField(default=False)
-    air_conditioning = models.BooleanField(default=False)
-
-
 class Vehicle(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    type = models.CharField(max_length=20, choices=VehicleTypes.choices)
     capacity = models.PositiveIntegerField()
-    services = models.ForeignKey(Services, on_delete=models.CASCADE)
     company = models.ForeignKey('company.Company', on_delete=models.PROTECT, null=True)
+    unicode = models.CharField(max_length=20, null=True)
+    catering_service = models.BooleanField(default=False)
+    wifi_access = models.BooleanField(default=False)
+    television = models.BooleanField(default=False)
+    air_conditioning = models.BooleanField(default=False)
 
-
-class Train(Vehicle):
-    star_number = models.IntegerField(choices=[(i, i) for i in range(3, 6)])
-    unicode = models.CharField(max_length=50)
-
-
-class AirPlaneClassTypes(models.TextChoices):
-    Economy = 'Economy'
-    Business = 'Business'
-    FirstClass = 'FirstClass'
-
-
-class AirPlaneClasses(models.TextChoices):
-    Airbus = "Airbus"
-    Privet_Jet = "PrivetJet"
-
-
-class AirPlane(Vehicle):
-    unicode = models.CharField(max_length=50, unique=True)
-    flight_class = models.CharField(max_length=20, choices=AirPlaneClasses.choices)
-
-
-class BusClassTypes(models.TextChoices):
-    VIP = 'VIP'
-    Normal = 'Normal'
-    Sleepable = 'Sleepable'
-
-
-class BusSeatTypes(models.TextChoices):
-    ONEONE = '1+1'
-    TWOONE = '2+1'
-
-
-class Bus(Vehicle):
-    bus_type = models.CharField(max_length=20, choices=BusClassTypes.choices)
-    seat_kind = models.CharField(max_length=10, choices=BusSeatTypes.choices)
-    license_plate = models.CharField(max_length=15)
 
 
 class SectionType(models.TextChoices):

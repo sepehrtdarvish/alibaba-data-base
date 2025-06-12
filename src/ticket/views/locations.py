@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from django.utils.decorators import method_decorator
-
+from django.db import connection
 from ticket.models import StationLocation, LocationType
 from ticket.serializers import GetLocationSerializer, StationLocationModelSerializer, StationLocationSerializer
 from users.decorators import company_required
@@ -17,7 +17,17 @@ class LocationView(APIView):
         serializer.is_valid(raise_exception=True)
 
         location_type = serializer.validated_data['type']
-        locations = StationLocation.objects.filter(type=location_type)
+        """locations = StationLocation.objects.filter(type=location_type)"""
+
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT * FROM ticket_stationlocation
+                WHERE type = %s;
+            """, [location_type])
+            columns = [col[0] for col in cursor.description]
+            rows = cursor.fetchall()
+
+        locations = [dict(zip(columns, row)) for row in rows]
 
         location_serializer = StationLocationModelSerializer(locations, many=True)
 
@@ -30,6 +40,6 @@ class AdminLocationView(APIView):
     def post(self, request):
         serializer = StationLocationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        station = serializer.save()
+        serializer.save()
 
         return Response(status=status.HTTP_200_OK)

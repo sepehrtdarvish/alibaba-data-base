@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from ticket.models import StationLocation, LocationType, Ticket, TicketSection
-from company.models import Vehicle, Company, Section, SectionType, Train, Bus, AirPlane, RefundRule
-from company.serializers import TrainReadSerializer, BusReadSerializer, AirplaneReadSerializer, SectionReadSerializer
+from company.models import Vehicle, Company, Section, SectionType, RefundRule
+from company.serializers import VehicleReadSerializer, SectionReadSerializer
 
 from django.db import transaction
 
@@ -109,16 +109,7 @@ class TicketModelSerializer(serializers.ModelSerializer):
 
     def get_vehicle(self, obj):
         vehicle = obj.sections.first().section.vehicle
-        
-        if hasattr(vehicle, 'train'):
-            train = vehicle.train
-            return TrainReadSerializer(train).data
-        elif hasattr(vehicle, 'bus'):
-            bus = vehicle.bus
-            return BusReadSerializer(bus).data
-        elif hasattr(vehicle, 'airplane'):
-            airplane = vehicle.airplane
-            return AirplaneReadSerializer(airplane).data
+        return VehicleReadSerializer(vehicle).data
 
 
 class TicketSectionModelSerializer(serializers.ModelSerializer):

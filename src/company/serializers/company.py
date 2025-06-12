@@ -1,9 +1,9 @@
 from rest_framework import serializers
 from ticket.models import StationLocation
-from company.models import ReportType, RefundRule
+from company.models import Company
 
-from django.db import transaction
-
+from django.db import transaction, connection
+import uuid
 
 class RefundRuleWriteSerializer(serializers.Serializer):
     days = serializers.IntegerField()
@@ -38,11 +38,42 @@ class CompanyPolicyWriteSerializer(serializers.Serializer):
 
         with transaction.atomic():
             for rule in validated_data['rules']:
-                refund_rule = RefundRule.objects.create(
-                    **rule,
-                    company=company
-                    )
-                
+                columns = []
+                values = []
+                placeholders = []
+
+                for key, value in rule.items():
+                    columns.append(key)
+                    values.append(value)
+                    placeholders.append('%s')
+
+                new_id = str(uuid.uuid4())
+                columns.append('id')
+                values.append(new_id)
+                placeholders.append('%s')
+
+                columns.append('company_id')
+                values.append(company.id)
+                placeholders.append('%s')
+
+                sql = f"""
+                    INSERT INTO company_refundrule ({', '.join(columns)})
+                    VALUES ({', '.join(placeholders)})
+                    RETURNING *;
+                """
+
+                with connection.cursor() as cursor:
+                    cursor.execute(sql, values)
+                    cols = [col[0] for col in cursor.description]
+                    row = cursor.fetchone()
+                    refund_rule = dict(zip(cols, row))
+
                 created_rules.append(refund_rule)
-        
+                
         return created_rules
+
+
+class CompanyReadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Company
+        fields = '__all__'

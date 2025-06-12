@@ -6,8 +6,7 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from django.utils.decorators import method_decorator
 from users.decorators import company_required
 
-from company.models import Train
-from company.serializers import TrainWriteSerializer, CompanyPolicyWriteSerializer
+from company.serializers import CompanyPolicyWriteSerializer
 
 
 
@@ -22,7 +21,3 @@ class CompanyPolicyView(APIView):
 
         return Response(status=status.HTTP_200_OK)
     
-    @method_decorator(company_required)
-    def update(self, request):
-        # TODO complete this part
-        pass

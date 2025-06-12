@@ -5,17 +5,17 @@ from rest_framework.permissions import IsAuthenticated
 from django.utils.decorators import method_decorator
 from django.db.models import Q
 from django.utils import timezone
-from django.db import transaction
+from django.db import transaction, connection
 
 from ticket.utils import get_refund_amount
 from ticket.models import StationLocation, LocationType, Ticket, Reservation
-from ticket.serializers import GetLocationSerializer, ReservationGetIDSerializezr, ReservationReadSerializer, ReservationWriteSerializer
+from ticket.serializers import CompleteResrvationSerializer, ReservationGetIDSerializezr, ReservationReadSerializer, ReservationWriteSerializer
 
 from company.models import RefundRule
 
 from users.decorators import company_required
 
-from transaction.models import Transaction, TransactionType
+from ticket.models import Transaction, TransactionType
 
 from django.conf import settings
 
@@ -26,13 +26,25 @@ class ReservationView(APIView):
     def post(self, request):
         serializer = ReservationWriteSerializer(data=request.data, context={'user': request.user})
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        payment_token = serializer.save()
 
-        return Response(status=status.HTTP_200_OK)
+        return Response({'token': payment_token}, status=status.HTTP_200_OK)
     
     def get(self, request):
         user = request.user
-        reservations = Reservation.objects.filter(user=user)
+
+        # reservations = Reservation.objects.filter(user=user)
+
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT * FROM ticket_reservation
+                WHERE user_id = %s;
+            """, [user.id])
+            columns = [col[0] for col in cursor.description]
+            rows = cursor.fetchall()
+
+        ids = [row[0] for row in rows]
+        reservations = Reservation.objects.filter(id__in=ids)
 
         return Response(ReservationReadSerializer(reservations, many=True).data, status=status.HTTP_200_OK)
     
@@ -62,16 +74,45 @@ class CancelReservationView(APIView):
         reservation = serializer.validated_data['reservation']
 
         with transaction.atomic():
-            reservation.is_cancelled = True
-            reservation.save()
-        
-            refund_amount = get_refund_amount(reservation=reservation)
-            user.wallet.balance += refund_amount
+            # reservation.is_cancelled = True
+            # reservation.save()
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    UPDATE reservation
+                    SET is_cancelled = TRUE
+                    WHERE id = %s;
+                """, [reservation_id])
 
-            Transaction.objects.create(
-                type = TransactionType.REFUND,
-                amount = refund_amount,
-                wallet = user.wallet
-            )
+            refund_amount = get_refund_amount(reservation=reservation)
+
+            # user.wallet.balance += refund_amount
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    UPDATE wallet
+                    SET balance = balance + %s
+                    WHERE id = %s;
+                """, [refund_amount, user['wallet_id']])
+
+            # Transaction.objects.create(
+            #     type = TransactionType.REFUND,
+            #     amount = refund_amount,
+            #     wallet = user.wallet
+            # )
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    INSERT INTO transaction (type, amount, wallet_id)
+                    VALUES (%s, %s, %s);
+                """, ['REFUND', refund_amount, user['wallet_id']])
 
         return Response(status=status.HTTP_200_OK)
+
+
+class CompleteReservationView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = CompleteResrvationSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        reservation = serializer.save()
+
+        return Response(ReservationReadSerializer(reservation).data, status=status.HTTP_200_OK)
