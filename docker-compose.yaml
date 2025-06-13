@@ -29,6 +29,8 @@ services:
       POSTGRES_USER: $PDB_USER
       POSTGRES_PASSWORD: $PDB_PASS
       POSTGRES_DB: $PDB_NAME
+    ports:
+      - "5432:5432" 
     volumes:
       - alibaba_local_db_mount:/var/lib/postgresql/data
       

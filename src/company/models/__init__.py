@@ -1,4 +1,4 @@
 from .vehicle import *
 from .document import *
-from .report import *
+from .Report import *
 from .company import *
