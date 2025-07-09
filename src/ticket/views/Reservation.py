@@ -59,10 +59,7 @@ class CancelReservationView(APIView):
         reservation = serializer.validated_data['reservation']
 
         refund_amount = get_refund_amount(reservation=reservation)
-        
-        # TODO Check logic again with validated timezone
-
-
+    
         return Response({'refund_amount': refund_amount}, status=status.HTTP_200_OK)
 
 
