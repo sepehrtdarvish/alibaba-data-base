@@ -153,7 +153,6 @@ class GetVehicleSerializer(serializers.Serializer):
         type = attrs.get('type')
         id = attrs.get('id', None)
 
-
         if id:
             with connection.cursor() as cursor:
                 cursor.execute(f"""
@@ -171,3 +170,7 @@ class GetVehicleSerializer(serializers.Serializer):
                 raise serializers.ValidationError("There is no vehicle with the given ID.")
         
         return attrs
+
+
+class GetCompanyVehicleSerializer(serializers.Serializer):
+    type = serializers.ChoiceField(choices=VehicleTypes.choices, required=True)
