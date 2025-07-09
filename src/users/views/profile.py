@@ -5,7 +5,7 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from utils.redis_client import redis_client
+from django.core.cache import cache
 
 class ProfileView(APIView):
     permission_classes = [IsAuthenticated]
@@ -14,7 +14,7 @@ class ProfileView(APIView):
         user_id = request.user.id
         cache_key = f"user:profile:{user_id}"
 
-        cached_profile = redis_client.get(cache_key)
+        cached_profile = cache.get(cache_key)
         if cached_profile:
             profile_data = json.loads(cached_profile)
             return Response(profile_data, status=status.HTTP_200_OK)
@@ -38,7 +38,7 @@ class ProfileView(APIView):
             "birthdate": str(row[4]) if row[4] else None,  # convert date to string for JSON
         }
 
-        redis_client.setex(cache_key, 300, json.dumps(profile_data))
+        cache.set(cache_key, 300, json.dumps(profile_data))
 
         return Response(profile_data, status=status.HTTP_200_OK)
 
@@ -49,7 +49,7 @@ class ProfileView(APIView):
 
         user_id = request.data.get("user")
         if user_id:
-            redis_client.delete(f"user:profile:{user_id}")  # clear any stale cache
+            cache.delete(f"user:profile:{user_id}")
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -68,7 +68,7 @@ class ProfileView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.update(instance=None, validated_data=serializer.validated_data)
 
-        redis_client.delete(f"user:profile:{user_id}")
+        cache.delete(f"user:profile:{user_id}")
 
         return Response({"detail": "Profile updated."}, status=status.HTTP_200_OK)
 

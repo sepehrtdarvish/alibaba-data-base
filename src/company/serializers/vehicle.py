@@ -33,7 +33,7 @@ class VehicleWriteSerializer(serializers.Serializer):
     wifi_access = serializers.BooleanField(required=False)
     sections = SeatWriteSerializer(many=True, required=True)
     unicode = serializers.CharField(required=True)
-    vehicle_type = serializers.ChoiceField(choices=VehicleTypes.choices)
+    type = serializers.ChoiceField(choices=VehicleTypes.choices)
 
 
     def validate_capacity(self, obj):
@@ -69,7 +69,7 @@ class VehicleWriteSerializer(serializers.Serializer):
         with transaction.atomic():
             with connection.cursor() as cursor:
                 cursor.execute("""
-                    INSERT INTO company_vehicle (id, air_conditioning, television, catering_service, wifi_access, vehicle_type, capacity, unicode, company_id)
+                    INSERT INTO company_vehicle (id, air_conditioning, television, catering_service, wifi_access, type, capacity, unicode, company_id)
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
                     RETURNING id;
                 """, [
@@ -78,7 +78,7 @@ class VehicleWriteSerializer(serializers.Serializer):
                     validated_data.get('television', False),
                     validated_data.get('catering_service', False),
                     validated_data.get('wifi_access', False),
-                    validated_data.get('vehicle_type'),
+                    validated_data.get('type'),
                     validated_data['capacity'],
                     validated_data['unicode'],
                     self.context['company'].id
@@ -120,7 +120,7 @@ class VehicleWriteSerializer(serializers.Serializer):
             'unicode': validated_data['unicode'],
             'company_id': self.context['company'].id,
             'sections': created_sections,
-            'vehicle_type': validated_data['vehicle_type'],
+            'type': validated_data['type'],
             'television': validated_data.get('television', False),
             'catering_service': validated_data.get('catering_service', False),
             'wifi_access': validated_data.get('wifi_access', False),

@@ -13,7 +13,7 @@ def get_refund_amount(reservation):
         if not refund_rule:
             refund_percentage = 0
         else:
-            refund_percentage = refund_rule.refund_percentage
+            refund_percentage = refund_rule.percentage
 
         refund_amount = reservation.ticket_section.price * refund_percentage / 100
 

@@ -6,7 +6,7 @@ from django.utils.decorators import method_decorator
 from django.db.models import Q
 from django.utils import timezone
 from django.db import transaction, connection
-
+import uuid
 from ticket.utils import get_refund_amount
 from ticket.models import StationLocation, LocationType, Ticket, Reservation
 from ticket.serializers import CompleteResrvationSerializer, ReservationGetIDSerializezr, ReservationReadSerializer, ReservationWriteSerializer
@@ -78,7 +78,7 @@ class CancelReservationView(APIView):
             # reservation.save()
             with connection.cursor() as cursor:
                 cursor.execute("""
-                    UPDATE reservation
+                    UPDATE ticket_reservation
                     SET is_cancelled = TRUE
                     WHERE id = %s;
                 """, [reservation_id])
@@ -88,21 +88,22 @@ class CancelReservationView(APIView):
             # user.wallet.balance += refund_amount
             with connection.cursor() as cursor:
                 cursor.execute("""
-                    UPDATE wallet
+                    UPDATE ticket_wallet
                     SET balance = balance + %s
                     WHERE id = %s;
-                """, [refund_amount, user['wallet_id']])
+                """, [refund_amount, user.wallet.id])
 
             # Transaction.objects.create(
             #     type = TransactionType.REFUND,
             #     amount = refund_amount,
             #     wallet = user.wallet
             # )
+            transaction_id = uuid.uuid4()
             with connection.cursor() as cursor:
                 cursor.execute("""
-                    INSERT INTO transaction (type, amount, wallet_id)
-                    VALUES (%s, %s, %s);
-                """, ['REFUND', refund_amount, user['wallet_id']])
+                    INSERT INTO ticket_transaction (id, type, amount, wallet_id, created_at)
+                    VALUES (%s, %s, %s, %s, NOW());
+                """, [transaction_id, 'REFUND', refund_amount, user.wallet.id])
 
         return Response(status=status.HTTP_200_OK)
 
