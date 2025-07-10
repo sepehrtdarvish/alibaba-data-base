@@ -12,16 +12,18 @@ class ProfileSerializer(serializers.Serializer):
         user = self.context['user']
         if Profile.objects.filter(user=user):
             raise serializers.ValidationError('user already has a profile')
-
+        return attrs
 
     def create(self, validated_data):
         user = self.context['user']
-        Profile.objects.create(
+        prof = Profile.objects.create(
             user = user,
             full_name = validated_data.get('full_name', None),
             home_town = validated_data.get('home_town', None),
             birthdate = validated_data.get('birthdate', None),
         )
+
+        return prof
 
 class ProfileUpdateSerializer(serializers.Serializer):
     full_name = serializers.CharField(max_length=100, required=True)
