@@ -1,7 +1,7 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from django.utils.decorators import method_decorator
 from django.db.models import Q
 from django.utils import timezone
@@ -49,6 +49,13 @@ class ReservationView(APIView):
         return Response(ReservationReadSerializer(reservations, many=True).data, status=status.HTTP_200_OK)
     
     
+class AdminReservationView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def get(self, request):
+        return Response(ReservationReadSerializer(Reservation.objects.all()).data, status=status.HTTP_200_OK)
+
+
 class CancelReservationView(APIView):
     permission_classes = [IsAuthenticated]
 

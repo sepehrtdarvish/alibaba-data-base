@@ -10,6 +10,7 @@ from django.contrib.auth import authenticate
 from users.serializers import ActivateAccountSerializer, CompanyOwnerWriteSerializer, LoginSerializer
 from users.models import UserAccount
 from users.exceptions import AuthenticationFailed
+from users.serializers import AccountSerializer
 from general.utils.otp import generate_otp, generate_user_token, verify_otp
 from general.utils.gmail_sender import GmailSender
 
@@ -157,3 +158,9 @@ class AdminCompanyOwner(APIView):
         serializer.save()
 
         return Response(status=status.HTTP_200_OK)
+    
+class AdminGetAccounts(APIView):
+    permission_classes = [IsAuthenticated, IsAdminUser]
+
+    def get(self, request):
+        return Response(AccountSerializer(UserAccount.objects.filter(is_staff=False, is_superuser=False, is_company_owner=False), many=True).data, status=status.HTTP_200_OK)

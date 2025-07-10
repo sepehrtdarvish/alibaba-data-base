@@ -3,7 +3,7 @@ from rest_framework import serializers
 from general.utils.otp import generate_otp
 from users.models import UserAccount
 from django.db import transaction
-
+from users.models import UserAccount
 from company.models import Company
 from general.utils.otp import generate_user_token, get_user_by_token
 from users.utils import get_user_or_404, detect_identifier_type
@@ -116,3 +116,9 @@ class LoginSerializer(serializers.Serializer):
         attrs['user'] = user
         
         return attrs
+    
+
+class AccountSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserAccount
+        fields = '__all__'
