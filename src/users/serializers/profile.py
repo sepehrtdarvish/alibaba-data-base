@@ -3,9 +3,16 @@ from users.models import Profile
 
 
 class ProfileSerializer(serializers.Serializer):
-    full_name = serializers.CharField(max_length=100, required=False)
-    home_town = serializers.CharField(max_length=40, required=False)
-    birthdate = serializers.DateField(required=False)
+    full_name = serializers.CharField(max_length=100, required=True)
+    home_town = serializers.CharField(max_length=40, required=True)
+    birthdate = serializers.DateField(required=True)
+
+
+    def validate(self, attrs):
+        user = self.context['user']
+        if Profile.objects.filter(user=user):
+            raise serializers.ValidationError('user already has a profile')
+
 
     def create(self, validated_data):
         user = self.context['user']
@@ -15,6 +22,11 @@ class ProfileSerializer(serializers.Serializer):
             home_town = validated_data.get('home_town', None),
             birthdate = validated_data.get('birthdate', None),
         )
+
+class ProfileUpdateSerializer(serializers.Serializer):
+    full_name = serializers.CharField(max_length=100, required=True)
+    home_town = serializers.CharField(max_length=40, required=True)
+    birthdate = serializers.DateField(required=True)
 
     def update(self, validated_data):
         user = self.context['user']
@@ -29,3 +41,10 @@ class ProfileSerializer(serializers.Serializer):
         profile.birthdate = birthdate if birthdate else profile.birthdate
 
         profile.save()
+        
+    
+
+class ProfileModelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profile
+        fields = '__all__'

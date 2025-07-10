@@ -1,5 +1,5 @@
 import json
-from users.serializers import ProfileSerializer
+from users.serializers import ProfileSerializer, ProfileUpdateSerializer, ProfileModelSerializer
 from django.db import connection
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
@@ -35,19 +35,17 @@ class ProfileView(APIView):
             "user": row[1],
             "full_name": row[2],
             "home_town": row[3],
-            "birthdate": str(row[4]) if row[4] else None,  # convert date to string for JSON
+            "birthdate": str(row[4]) if row[4] else None,
         }
-
-        cache.set(cache_key, 300, json.dumps(profile_data))
 
         return Response(profile_data, status=status.HTTP_200_OK)
 
     def post(self, request):
-        serializer = ProfileSerializer(data=request.data)
+        serializer = ProfileSerializer(data=request.data, context={'user': request.user})
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
-        user_id = request.data.get("user")
+        user_id = request.user.id
         if user_id:
             cache.delete(f"user:profile:{user_id}")
 
@@ -63,12 +61,33 @@ class ProfileView(APIView):
                 return Response({"detail": "Profile not found."}, status=status.HTTP_404_NOT_FOUND)
             profile_id = row[0]
 
-        request.data['id'] = profile_id  # for serializer to update the correct row
-        serializer = ProfileSerializer(data=request.data)
+        request.data['id'] = profile_id
+        serializer = ProfileUpdateSerializer(data=request.data, context={'user': request.user})
         serializer.is_valid(raise_exception=True)
-        serializer.update(instance=None, validated_data=serializer.validated_data)
+        validated_data = serializer.validated_data
+        
+        serializer.update(validated_data)
 
         cache.delete(f"user:profile:{user_id}")
 
-        return Response({"detail": "Profile updated."}, status=status.HTTP_200_OK)
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT id, user_id, full_name, home_town, birthdate
+                FROM users_profile
+                WHERE user_id = %s
+            """, [user_id])
+            row = cursor.fetchone()
+
+        if not row:
+            return Response({"detail": "Profile not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        profile_data = {
+            "id": row[0],
+            "user": row[1],
+            "full_name": row[2],
+            "home_town": row[3],
+            "birthdate": str(row[4]) if row[4] else None,
+        }
+
+        return Response(profile_data, status=status.HTTP_200_OK)
 
