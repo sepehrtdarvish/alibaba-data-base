@@ -53,7 +53,7 @@ class AdminReservationView(APIView):
     permission_classes = [IsAdminUser]
 
     def get(self, request):
-        return Response(ReservationReadSerializer(Reservation.objects.all()).data, status=status.HTTP_200_OK)
+        return Response(ReservationReadSerializer(Reservation.objects.all(), many=True).data, status=status.HTTP_200_OK)
 
 
 class CancelReservationView(APIView):
