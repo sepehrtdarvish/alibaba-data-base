@@ -90,7 +90,6 @@ class TicketView(APIView):
             values.append(destination)
 
         delay = params.get('delay')
-        print(delay)
         if delay:
             sql += " AND delay = %s"
             values.append(str(delay))
@@ -102,7 +101,6 @@ class TicketView(APIView):
 
 
         start_at = params.get('start_at')
-        print(start_at)
         if start_at:
             sql += " AND start_at >= %s"
             values.append(start_at)
