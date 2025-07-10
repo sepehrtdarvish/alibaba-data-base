@@ -126,9 +126,5 @@ class TicketQuerySerializer(serializers.Serializer):
         queryset = StationLocation.objects.all(), required=False
     )
     start_at = serializers.DateField(required=False)
-    min_price = serializers.FloatField(required=False)
-    max_price = serializers.FloatField(required=False)
-    class_type = serializers.ChoiceField(choices=SectionType.choices, required=False)
-    company = serializers.PrimaryKeyRelatedField(
-        queryset = Company.objects.all(), required=False
-    )
+    delay = serializers.IntegerField(required=False)
+    stops = serializers.IntegerField(required=False)

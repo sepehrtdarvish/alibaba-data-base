@@ -79,30 +79,35 @@ class TicketView(APIView):
         sql = "SELECT * FROM ticket_ticket WHERE 1=1"
         values = []
 
-        origin = params.get('origin')
+        origin = params.get('origin').id
         if origin:
-            sql += " AND origin = %s"
+            sql += " AND origin_id = %s"
             values.append(origin)
-
-        destination = params.get('destination')
+        
+        destination = params.get('destination').id
         if destination:
-            sql += " AND destination = %s"
+            sql += " AND destination_id = %s"
             values.append(destination)
 
+        delay = params.get('delay')
+        print(delay)
+        if delay:
+            sql += " AND delay = %s"
+            values.append(str(delay))
+
+        stops = params.get('stops')
+        if stops:
+            sql += " AND stops = %s"
+            values.append(str(stops))
+
+
         start_at = params.get('start_at')
+        print(start_at)
         if start_at:
             sql += " AND start_at >= %s"
             values.append(start_at)
 
-        min_price = params.get('min_price')
-        if min_price:
-            sql += " AND price >= %s"
-            values.append(min_price)
 
-        max_price = params.get('max_price')
-        if max_price:
-            sql += " AND price <= %s"
-            values.append(max_price)
 
 
         with connection.cursor() as cursor:
